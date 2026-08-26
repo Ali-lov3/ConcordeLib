@@ -57,11 +57,11 @@ function ConcordeLib.new(config)
 	config = config or {}
 	local self = setmetatable({}, ConcordeLib)
 
-	local LOGO        = config.Logo        or "rbxassetid://0"
-	local ACCENT      = config.Accent      or Color3.fromRGB(240, 45, 70)
-	local BG          = config.Background  or Color3.fromRGB(11, 12, 16)
-	local SIDEBAR_COL = config.Sidebar     or Color3.fromRGB(14, 15, 20)
-	local TEXT_COL    = config.TextColor   or Color3.fromRGB(240, 240, 245)
+	local LOGO        = config.Logo       or "rbxassetid://0"
+	local ACCENT      = config.Accent     or Color3.fromRGB(240, 45, 70)
+	local BG          = config.Background or Color3.fromRGB(11, 12, 16)
+	local SIDEBAR_COL = config.Sidebar    or Color3.fromRGB(14, 15, 20)
+	local TEXT_COL    = config.TextColor  or Color3.fromRGB(240, 240, 245)
 
 	local sg = Instance.new("ScreenGui")
 	sg.Name = "ConcordeUi"
@@ -88,19 +88,16 @@ function ConcordeLib.new(config)
 		n.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 		n.BackgroundTransparency = 1
 		n.Parent = notifHolder
-
 		Instance.new("UICorner", n).CornerRadius = UDim.new(0, 8)
 		local ns = Instance.new("UIStroke", n)
 		ns.Color = Color3.fromRGB(32, 35, 48)
 		ns.Thickness = 1.2
-
 		local bar = Instance.new("Frame", n)
 		bar.Size = UDim2.new(0, 3, 0.6, 0)
 		bar.Position = UDim2.new(0, 10, 0.2, 0)
 		bar.BackgroundColor3 = ACCENT
 		bar.BorderSizePixel = 0
 		Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
-
 		local nt = Instance.new("TextLabel", n)
 		nt.Size = UDim2.new(1, -26, 1, 0)
 		nt.Position = UDim2.new(0, 20, 0, 0)
@@ -110,7 +107,6 @@ function ConcordeLib.new(config)
 		nt.Font = Enum.Font.GothamMedium
 		nt.TextSize = 10.5
 		nt.TextXAlignment = Enum.TextXAlignment.Left
-
 		ts:Create(n, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
 		task.delay(2.5, function()
 			local t = ts:Create(n, TweenInfo.new(0.25), {BackgroundTransparency = 1})
@@ -166,7 +162,8 @@ function ConcordeLib.new(config)
 	svCursor.ZIndex = 504
 	Instance.new("UICorner", svCursor).CornerRadius = UDim.new(1, 0)
 	local svCS = Instance.new("UIStroke", svCursor)
-	svCS.Color = Color3.fromRGB(0,0,0); svCS.Thickness = 1
+	svCS.Color = Color3.fromRGB(0, 0, 0)
+	svCS.Thickness = 1
 
 	local hueBox = Instance.new("Frame", cpModal)
 	hueBox.Size = UDim2.new(0, 20, 0, 160)
@@ -176,29 +173,30 @@ function ConcordeLib.new(config)
 	local hueGrad = Instance.new("UIGradient", hueBox)
 	hueGrad.Rotation = 90
 	hueGrad.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255,0,0)),
-		ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255,255,0)),
-		ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0,255,0)),
-		ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0,255,255)),
-		ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0,0,255)),
-		ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255,0,255)),
-		ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255,0,0)),
+		ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+		ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+		ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 255)),
+		ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+		ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+		ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 0)),
 	})
 
 	local hueCursor = Instance.new("Frame", hueBox)
 	hueCursor.Size = UDim2.new(1, 4, 0, 4)
 	hueCursor.Position = UDim2.new(0, -2, 0, -2)
-	hueCursor.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	hueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	hueCursor.ZIndex = 504
 	local huCS = Instance.new("UIStroke", hueCursor)
-	huCS.Color = Color3.fromRGB(0,0,0); huCS.Thickness = 1
+	huCS.Color = Color3.fromRGB(0, 0, 0)
+	huCS.Thickness = 1
 
 	local cpConfirm = Instance.new("TextButton", cpModal)
 	cpConfirm.Size = UDim2.new(1, -20, 0, 18)
 	cpConfirm.Position = UDim2.new(0, 10, 1, -24)
 	cpConfirm.BackgroundColor3 = ACCENT
 	cpConfirm.Text = "Done"
-	cpConfirm.TextColor3 = Color3.fromRGB(255,255,255)
+	cpConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
 	cpConfirm.Font = Enum.Font.GothamBold
 	cpConfirm.TextSize = 10
 	cpConfirm.ZIndex = 505
@@ -237,7 +235,8 @@ function ConcordeLib.new(config)
 
 	uis.InputEnded:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragSV = false; dragHue = false
+			dragSV = false
+			dragHue = false
 		end
 	end)
 
@@ -277,7 +276,8 @@ function ConcordeLib.new(config)
 	ob.AutoButtonColor = false
 	Instance.new("UICorner", ob).CornerRadius = UDim.new(0, 10)
 	local obs = Instance.new("UIStroke", ob)
-	obs.Color = ACCENT; obs.Thickness = 1.2
+	obs.Color = ACCENT
+	obs.Thickness = 1.2
 	self._accentStroke = obs
 
 	local obIcon = Instance.new("ImageLabel", ob)
@@ -295,12 +295,16 @@ function ConcordeLib.new(config)
 	mf.Visible = true
 	Instance.new("UICorner", mf).CornerRadius = UDim.new(0, 10)
 	local mfs = Instance.new("UIStroke", mf)
-	mfs.Color = Color3.fromRGB(25, 27, 36); mfs.Thickness = 1.2
+	mfs.Color = Color3.fromRGB(25, 27, 36)
+	mfs.Thickness = 1.2
+	self._mf = mf
 
 	local dt, di, ds, sp
 	mf.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dt = true; ds = i.Position; sp = mf.Position
+			dt = true
+			ds = i.Position
+			sp = mf.Position
 			i.Changed:Connect(function()
 				if i.UserInputState == Enum.UserInputState.End then dt = false end
 			end)
@@ -328,7 +332,8 @@ function ConcordeLib.new(config)
 	sbf.Position = UDim2.new(1, -10, 0, 0)
 	sbf.BackgroundColor3 = SIDEBAR_COL
 	sbf.BorderSizePixel = 0
-	self._sb = sb; self._sbf = sbf
+	self._sb = sb
+	self._sbf = sbf
 
 	local logoLabel = Instance.new("ImageLabel", sb)
 	logoLabel.Size = UDim2.new(0, 24, 0, 24)
@@ -381,7 +386,8 @@ function ConcordeLib.new(config)
 	topDrop.Visible = false
 	Instance.new("UICorner", topDrop).CornerRadius = UDim.new(0, 5)
 	local tds = Instance.new("UIStroke", topDrop)
-	tds.Color = Color3.fromRGB(26, 28, 38); tds.Thickness = 1
+	tds.Color = Color3.fromRGB(26, 28, 38)
+	tds.Thickness = 1
 
 	local tdt = Instance.new("TextLabel", topDrop)
 	tdt.Size = UDim2.new(1, -22, 1, 0)
@@ -410,7 +416,8 @@ function ConcordeLib.new(config)
 	topDropList.ZIndex = 100
 	Instance.new("UICorner", topDropList).CornerRadius = UDim.new(0, 5)
 	local tdls = Instance.new("UIStroke", topDropList)
-	tdls.Color = Color3.fromRGB(30, 32, 44); tdls.Thickness = 1
+	tdls.Color = Color3.fromRGB(30, 32, 44)
+	tdls.Thickness = 1
 	Instance.new("UIListLayout", topDropList).SortOrder = Enum.SortOrder.LayoutOrder
 
 	topDrop.MouseButton1Click:Connect(function()
@@ -422,8 +429,8 @@ function ConcordeLib.new(config)
 	tabContainer.Position = UDim2.new(0, 0, 0, 42)
 	tabContainer.BackgroundTransparency = 1
 
-	local sidebarTabs  = {}
-	local sidebarBtns  = {}
+	local sidebarTabs = {}
+	local sidebarBtns = {}
 	local currentActiveTab = nil
 
 	local function updateTopDropMenu()
@@ -467,7 +474,7 @@ function ConcordeLib.new(config)
 		btn.Size = UDim2.new(0, 20, 0, 20)
 		btn.Position = UDim2.new(0.5, -10, 0, 50 + (idx - 1) * 38)
 		btn.BackgroundTransparency = 1
-		btn.ImageColor3 = idx == 1 and Color3.fromRGB(255,255,255) or Color3.fromRGB(100,102,118)
+		btn.ImageColor3 = idx == 1 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(100, 102, 118)
 		ApplyIcon(btn, iconName)
 
 		local tabData = {
@@ -494,23 +501,21 @@ function ConcordeLib.new(config)
 				col.ClipsDescendants = true
 				Instance.new("UICorner", col).CornerRadius = UDim.new(0, 8)
 				local cs = Instance.new("UIStroke", col)
-				cs.Color = Color3.fromRGB(22, 23, 31); cs.Thickness = 1
-
+				cs.Color = Color3.fromRGB(22, 23, 31)
+				cs.Thickness = 1
 				local scrl = Instance.new("ScrollingFrame", col)
 				scrl.Size = UDim2.new(1, 0, 1, 0)
 				scrl.BackgroundTransparency = 1
 				scrl.ScrollBarThickness = 2
 				scrl.ScrollBarImageColor3 = Color3.fromRGB(45, 48, 62)
 				scrl.AutomaticCanvasSize = Enum.AutomaticSize.Y
-				scrl.CanvasSize = UDim2.new(0,0,0,0)
+				scrl.CanvasSize = UDim2.new(0, 0, 0, 0)
 				scrl.BorderSizePixel = 0
-
 				local pad = Instance.new("UIPadding", scrl)
 				pad.PaddingLeft   = UDim.new(0, 12)
 				pad.PaddingRight  = UDim.new(0, 14)
 				pad.PaddingTop    = UDim.new(0, 10)
 				pad.PaddingBottom = UDim.new(0, 10)
-
 				local layout = Instance.new("UIListLayout", scrl)
 				layout.SortOrder = Enum.SortOrder.LayoutOrder
 				layout.Padding = UDim.new(0, 8)
@@ -539,7 +544,7 @@ function ConcordeLib.new(config)
 
 		btn.MouseButton1Click:Connect(function()
 			for i, t in ipairs(sidebarTabs) do
-				sidebarBtns[i].ImageColor3 = (i == idx) and Color3.fromRGB(255,255,255) or Color3.fromRGB(100,102,118)
+				sidebarBtns[i].ImageColor3 = (i == idx) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(100, 102, 118)
 				for _, sub in ipairs(t.SubPages) do sub.Frame.Visible = false end
 			end
 			currentActiveTab = tabData
@@ -560,7 +565,7 @@ function ConcordeLib.new(config)
 		l.Size = UDim2.new(1, 0, 0, 18)
 		l.BackgroundTransparency = 1
 		l.Text = text
-		l.TextColor3 = Color3.fromRGB(255,255,255)
+		l.TextColor3 = Color3.fromRGB(255, 255, 255)
 		l.Font = Enum.Font.GothamBold
 		l.TextSize = 11
 		l.TextXAlignment = Enum.TextXAlignment.Left
@@ -600,7 +605,7 @@ function ConcordeLib.new(config)
 		local ind = Instance.new("Frame", btn)
 		ind.Size = UDim2.new(0, 10, 0, 10)
 		ind.Position = state and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5)
-		ind.BackgroundColor3 = Color3.fromRGB(255,255,255)
+		ind.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		Instance.new("UICorner", ind).CornerRadius = UDim.new(1, 0)
 
 		if extraConfig then
@@ -623,17 +628,19 @@ function ConcordeLib.new(config)
 				kb.Size = UDim2.new(0, 24, 0, 14)
 				kb.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
 				kb.Text = extraConfig.keybind
-				kb.TextColor3 = Color3.fromRGB(150,152,168)
+				kb.TextColor3 = Color3.fromRGB(150, 152, 168)
 				kb.Font = Enum.Font.GothamMedium
 				kb.TextSize = 9
 				kb.LayoutOrder = 2
 				Instance.new("UICorner", kb).CornerRadius = UDim.new(0, 3)
 				local kbs = Instance.new("UIStroke", kb)
-				kbs.Color = Color3.fromRGB(32,34,46); kbs.Thickness = 1
+				kbs.Color = Color3.fromRGB(32, 34, 46)
+				kbs.Thickness = 1
 				local listening = false
 				kb.MouseButton1Click:Connect(function()
 					if listening then return end
-					listening = true; kb.Text = "..."
+					listening = true
+					kb.Text = "..."
 					local conn
 					conn = uis.InputBegan:Connect(function(input)
 						if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -650,7 +657,7 @@ function ConcordeLib.new(config)
 		btn.MouseButton1Click:Connect(function()
 			on = not on
 			btn.BackgroundColor3 = on and ACCENT or Color3.fromRGB(35, 36, 46)
-			ind:TweenPosition(on and UDim2.new(1,-12,0.5,-5) or UDim2.new(0,2,0.5,-5), "Out", "Sine", 0.12, true)
+			ind:TweenPosition(on and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5), "Out", "Sine", 0.12, true)
 			notify(text .. ": " .. tostring(on))
 		end)
 
@@ -695,7 +702,7 @@ function ConcordeLib.new(config)
 		l.Size = UDim2.new(1, 0, 0, 14)
 		l.BackgroundTransparency = 1
 		l.Text = text
-		l.TextColor3 = Color3.fromRGB(110,112,128)
+		l.TextColor3 = Color3.fromRGB(110, 112, 128)
 		l.Font = Enum.Font.Gotham
 		l.TextSize = 10
 		l.TextXAlignment = Enum.TextXAlignment.Left
@@ -703,19 +710,20 @@ function ConcordeLib.new(config)
 		local f = Instance.new("TextButton", wrap)
 		f.Size = UDim2.new(1, 0, 0, 22)
 		f.Position = UDim2.new(0, 0, 0, 16)
-		f.BackgroundColor3 = Color3.fromRGB(20,21,28)
+		f.BackgroundColor3 = Color3.fromRGB(20, 21, 28)
 		f.Text = ""
 		f.ZIndex = 11
 		Instance.new("UICorner", f).CornerRadius = UDim.new(0, 5)
 		local fs = Instance.new("UIStroke", f)
-		fs.Color = Color3.fromRGB(28,30,40); fs.Thickness = 1
+		fs.Color = Color3.fromRGB(28, 30, 40)
+		fs.Thickness = 1
 
 		local vl = Instance.new("TextLabel", f)
 		vl.Size = UDim2.new(1, -24, 1, 0)
 		vl.Position = UDim2.new(0, 8, 0, 0)
 		vl.BackgroundTransparency = 1
 		vl.Text = default
-		vl.TextColor3 = Color3.fromRGB(240,240,245)
+		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
 		vl.Font = Enum.Font.GothamMedium
 		vl.TextSize = 10
 		vl.TextXAlignment = Enum.TextXAlignment.Left
@@ -725,19 +733,20 @@ function ConcordeLib.new(config)
 		arr.Size = UDim2.new(0, 12, 0, 12)
 		arr.Position = UDim2.new(1, -16, 0.5, -6)
 		arr.BackgroundTransparency = 1
-		arr.ImageColor3 = Color3.fromRGB(110,112,128)
+		arr.ImageColor3 = Color3.fromRGB(110, 112, 128)
 		arr.ZIndex = 12
 		ApplyIcon(arr, "chevron-down")
 
 		local dropList = Instance.new("Frame", f)
 		dropList.Size = UDim2.new(1, 0, 0, #options * 22)
 		dropList.Position = UDim2.new(0, 0, 1, 3)
-		dropList.BackgroundColor3 = Color3.fromRGB(22,23,31)
+		dropList.BackgroundColor3 = Color3.fromRGB(22, 23, 31)
 		dropList.Visible = false
 		dropList.ZIndex = 30
 		Instance.new("UICorner", dropList).CornerRadius = UDim.new(0, 5)
 		local dls = Instance.new("UIStroke", dropList)
-		dls.Color = Color3.fromRGB(32,34,46); dls.Thickness = 1
+		dls.Color = Color3.fromRGB(32, 34, 46)
+		dls.Thickness = 1
 		Instance.new("UIListLayout", dropList).SortOrder = Enum.SortOrder.LayoutOrder
 
 		f.MouseButton1Click:Connect(function() dropList.Visible = not dropList.Visible end)
@@ -747,7 +756,7 @@ function ConcordeLib.new(config)
 			obtn.Size = UDim2.new(1, 0, 0, 22)
 			obtn.BackgroundTransparency = 1
 			obtn.Text = "  " .. opt
-			obtn.TextColor3 = Color3.fromRGB(200,202,215)
+			obtn.TextColor3 = Color3.fromRGB(200, 202, 215)
 			obtn.Font = Enum.Font.GothamMedium
 			obtn.TextSize = 9.5
 			obtn.TextXAlignment = Enum.TextXAlignment.Left
@@ -771,7 +780,7 @@ function ConcordeLib.new(config)
 		l.Size = UDim2.new(1, -135, 1, 0)
 		l.BackgroundTransparency = 1
 		l.Text = label
-		l.TextColor3 = Color3.fromRGB(150,152,168)
+		l.TextColor3 = Color3.fromRGB(150, 152, 168)
 		l.Font = Enum.Font.GothamMedium
 		l.TextSize = 10.5
 		l.TextXAlignment = Enum.TextXAlignment.Left
@@ -781,7 +790,7 @@ function ConcordeLib.new(config)
 		vl.Position = UDim2.new(1, -125, 0, 0)
 		vl.BackgroundTransparency = 1
 		vl.Text = tostring(default) .. unit
-		vl.TextColor3 = Color3.fromRGB(240,240,245)
+		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
 		vl.Font = Enum.Font.GothamMedium
 		vl.TextSize = 10
 		vl.TextXAlignment = Enum.TextXAlignment.Right
@@ -789,35 +798,36 @@ function ConcordeLib.new(config)
 		local bg = Instance.new("TextButton", f)
 		bg.Size = UDim2.new(0, 75, 0, 6)
 		bg.Position = UDim2.new(1, -75, 0.5, -3)
-		bg.BackgroundColor3 = Color3.fromRGB(24,25,33)
+		bg.BackgroundColor3 = Color3.fromRGB(24, 25, 33)
 		bg.AutoButtonColor = false
 		bg.Text = ""
 		Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
 
 		local fil = Instance.new("Frame", bg)
-		fil.Size = UDim2.new(math.clamp((default-min)/(max-min),0,1), 0, 1, 0)
+		fil.Size = UDim2.new(math.clamp((default - min) / (max - min), 0, 1), 0, 1, 0)
 		fil.BackgroundColor3 = ACCENT
 		fil.BorderSizePixel = 0
 		Instance.new("UICorner", fil).CornerRadius = UDim.new(1, 0)
 
 		local kn = Instance.new("Frame", fil)
-		kn.Size = UDim2.new(0,10,0,10)
-		kn.Position = UDim2.new(1,-5,0.5,-5)
-		kn.BackgroundColor3 = Color3.fromRGB(255,255,255)
-		Instance.new("UICorner", kn).CornerRadius = UDim.new(1,0)
+		kn.Size = UDim2.new(0, 10, 0, 10)
+		kn.Position = UDim2.new(1, -5, 0.5, -5)
+		kn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Instance.new("UICorner", kn).CornerRadius = UDim.new(1, 0)
 
 		local dragging = false
 		local function update(input)
 			local pct = math.clamp((input.Position.X - bg.AbsolutePosition.X) / bg.AbsoluteSize.X, 0, 1)
 			fil.Size = UDim2.new(pct, 0, 1, 0)
-			local cur = (max-min) < 10 and math.floor((min+(max-min)*pct)*100)/100 or math.floor(min+(max-min)*pct)
+			local cur = (max - min) < 10 and math.floor((min + (max - min) * pct) * 100) / 100 or math.floor(min + (max - min) * pct)
 			vl.Text = tostring(cur) .. unit
 			if callback then callback(cur) end
 		end
 
 		bg.InputBegan:Connect(function(i)
 			if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-				dragging = true; update(i)
+				dragging = true
+				update(i)
 			end
 		end)
 		uis.InputEnded:Connect(function(i)
@@ -838,7 +848,7 @@ function ConcordeLib.new(config)
 		l.Size = UDim2.new(1, -145, 1, 0)
 		l.BackgroundTransparency = 1
 		l.Text = label
-		l.TextColor3 = Color3.fromRGB(150,152,168)
+		l.TextColor3 = Color3.fromRGB(150, 152, 168)
 		l.Font = Enum.Font.GothamMedium
 		l.TextSize = 10.5
 		l.TextXAlignment = Enum.TextXAlignment.Left
@@ -847,8 +857,8 @@ function ConcordeLib.new(config)
 		vl.Size = UDim2.new(0, 60, 1, 0)
 		vl.Position = UDim2.new(1, -140, 0, 0)
 		vl.BackgroundTransparency = 1
-		vl.Text = tostring(defaultLow)..unit.." - "..tostring(defaultHigh)..unit
-		vl.TextColor3 = Color3.fromRGB(240,240,245)
+		vl.Text = tostring(defaultLow) .. unit .. " - " .. tostring(defaultHigh) .. unit
+		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
 		vl.Font = Enum.Font.GothamMedium
 		vl.TextSize = 10
 		vl.TextXAlignment = Enum.TextXAlignment.Right
@@ -856,11 +866,11 @@ function ConcordeLib.new(config)
 		local track = Instance.new("Frame", f)
 		track.Size = UDim2.new(0, 75, 0, 6)
 		track.Position = UDim2.new(1, -75, 0.5, -3)
-		track.BackgroundColor3 = Color3.fromRGB(24,25,33)
+		track.BackgroundColor3 = Color3.fromRGB(24, 25, 33)
 		Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
 
-		local lowPct  = math.clamp((defaultLow  - min)/(max-min), 0, 1)
-		local highPct = math.clamp((defaultHigh - min)/(max-min), 0, 1)
+		local lowPct  = math.clamp((defaultLow  - min) / (max - min), 0, 1)
+		local highPct = math.clamp((defaultHigh - min) / (max - min), 0, 1)
 		local valLow, valHigh = defaultLow, defaultHigh
 
 		local fill = Instance.new("Frame", track)
@@ -870,27 +880,26 @@ function ConcordeLib.new(config)
 		fill.BorderSizePixel = 0
 		Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
 
-		local function makeKnob(parent2)
+		local function makeKnob(parent2, pos)
 			local kn = Instance.new("TextButton", parent2)
-			kn.Size = UDim2.new(0,10,0,10)
-			kn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+			kn.Size = UDim2.new(0, 10, 0, 10)
+			kn.Position = pos
+			kn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			kn.Text = ""
 			kn.AutoButtonColor = false
 			Instance.new("UICorner", kn).CornerRadius = UDim.new(1, 0)
 			return kn
 		end
 
-		local kn1 = makeKnob(fill)
-		kn1.Position = UDim2.new(0,-5,0.5,-5)
-		local kn2 = makeKnob(fill)
-		kn2.Position = UDim2.new(1,-5,0.5,-5)
+		local kn1 = makeKnob(fill, UDim2.new(0, -5, 0.5, -5))
+		local kn2 = makeKnob(fill, UDim2.new(1, -5, 0.5, -5))
 
 		local d1, d2 = false, false
 
 		local function syncFill()
 			fill.Position = UDim2.new(lowPct, 0, 0, 0)
 			fill.Size = UDim2.new(highPct - lowPct, 0, 1, 0)
-			vl.Text = tostring(valLow)..unit.." - "..tostring(valHigh)..unit
+			vl.Text = tostring(valLow) .. unit .. " - " .. tostring(valHigh) .. unit
 			if callback then callback(valLow, valHigh) end
 		end
 
@@ -908,11 +917,11 @@ function ConcordeLib.new(config)
 				local pct = math.clamp((i.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
 				if d1 then
 					lowPct = math.min(pct, highPct)
-					valLow = math.floor(min + (max-min) * lowPct)
+					valLow = math.floor(min + (max - min) * lowPct)
 					syncFill()
 				elseif d2 then
 					highPct = math.max(pct, lowPct)
-					valHigh = math.floor(min + (max-min) * highPct)
+					valHigh = math.floor(min + (max - min) * highPct)
 					syncFill()
 				end
 			end
@@ -922,14 +931,15 @@ function ConcordeLib.new(config)
 	function self:Button(text, parent, callback)
 		local b = Instance.new("TextButton", parent)
 		b.Size = UDim2.new(1, 0, 0, 24)
-		b.BackgroundColor3 = Color3.fromRGB(20,21,28)
+		b.BackgroundColor3 = Color3.fromRGB(20, 21, 28)
 		b.Text = text
-		b.TextColor3 = Color3.fromRGB(240,240,245)
+		b.TextColor3 = Color3.fromRGB(240, 240, 245)
 		b.Font = Enum.Font.GothamMedium
 		b.TextSize = 10
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
 		local bs = Instance.new("UIStroke", b)
-		bs.Color = Color3.fromRGB(28,30,40); bs.Thickness = 1
+		bs.Color = Color3.fromRGB(28, 30, 40)
+		bs.Thickness = 1
 		b.MouseButton1Click:Connect(function()
 			if callback then callback() end
 			notify(text .. " executed!")
@@ -939,16 +949,17 @@ function ConcordeLib.new(config)
 	function self:TextBox(placeholder, parent, callback)
 		local b = Instance.new("TextBox", parent)
 		b.Size = UDim2.new(1, 0, 0, 24)
-		b.BackgroundColor3 = Color3.fromRGB(20,21,28)
+		b.BackgroundColor3 = Color3.fromRGB(20, 21, 28)
 		b.Text = ""
 		b.PlaceholderText = placeholder
-		b.PlaceholderColor3 = Color3.fromRGB(80,82,98)
-		b.TextColor3 = Color3.fromRGB(240,240,245)
+		b.PlaceholderColor3 = Color3.fromRGB(80, 82, 98)
+		b.TextColor3 = Color3.fromRGB(240, 240, 245)
 		b.Font = Enum.Font.Gotham
 		b.TextSize = 10
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
 		local bs = Instance.new("UIStroke", b)
-		bs.Color = Color3.fromRGB(28,30,40); bs.Thickness = 1
+		bs.Color = Color3.fromRGB(28, 30, 40)
+		bs.Thickness = 1
 		b.FocusLost:Connect(function(enter)
 			if enter and b.Text ~= "" then
 				notify("Input: " .. b.Text)
@@ -956,6 +967,47 @@ function ConcordeLib.new(config)
 			end
 		end)
 		return b
+	end
+
+	function self:ThemeSettingsApply(col1, col2)
+		self:Title("Theme", col1)
+		self:ColorTile("Accent Color", ACCENT, col1, function(c)
+			obs.Color = c
+			cpConfirm.BackgroundColor3 = c
+		end)
+		self:ColorTile("Background Color", BG, col1, function(c)
+			mf.BackgroundColor3 = c
+		end)
+		self:ColorTile("Sidebar Color", SIDEBAR_COL, col1, function(c)
+			sb.BackgroundColor3 = c
+			sbf.BackgroundColor3 = c
+		end)
+		self:ColorTile("Text Color", TEXT_COL, col1, function(c)
+			ht.TextColor3 = c
+		end)
+		self:Button("Reset Theme", col1, function()
+			obs.Color = Color3.fromRGB(240, 45, 70)
+			cpConfirm.BackgroundColor3 = Color3.fromRGB(240, 45, 70)
+			mf.BackgroundColor3 = Color3.fromRGB(11, 12, 16)
+			sb.BackgroundColor3 = Color3.fromRGB(14, 15, 20)
+			sbf.BackgroundColor3 = Color3.fromRGB(14, 15, 20)
+			ht.TextColor3 = Color3.fromRGB(240, 240, 245)
+			notify("Theme reset!")
+		end)
+	end
+
+	function self:ConfigApply(col1, col2)
+		self:Title("Config", col1)
+		local cfgInput = self:TextBox("Config Name", col1)
+		self:Dropdown("Select Config", "Default.json", {"Default.json", "Legit.json", "Rage.json"}, col1)
+		self:Button("Save Config", col1, function()
+			notify("Saved: " .. (cfgInput.Text ~= "" and cfgInput.Text or "Default"))
+		end)
+		self:Button("Load Config", col1, function() notify("Loaded config") end)
+		self:Button("Overwrite Config", col1, function() notify("Overwrote config") end)
+		self:Button("Set as Autoload", col1, function() notify("Set as autoload") end)
+		self:Button("Remove Autoload", col1, function() notify("Removed autoload") end)
+		self:Button("Delete Config", col1, function() notify("Deleted config") end)
 	end
 
 	return self
