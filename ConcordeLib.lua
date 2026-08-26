@@ -104,7 +104,7 @@ function ConcordeLib.new(config)
 		nt.BackgroundTransparency = 1
 		nt.Text = msg
 		nt.TextColor3 = Color3.fromRGB(235, 238, 245)
-		nt.Font = Enum.Font.GothamMedium
+		nt.Font = Enum.Font.MontserratMedium
 		nt.TextSize = 10.5
 		nt.TextXAlignment = Enum.TextXAlignment.Left
 		ts:Create(n, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
@@ -197,7 +197,7 @@ function ConcordeLib.new(config)
 	cpConfirm.BackgroundColor3 = ACCENT
 	cpConfirm.Text = "Done"
 	cpConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
-	cpConfirm.Font = Enum.Font.GothamBold
+	cpConfirm.Font = Enum.Font.MontserratBold
 	cpConfirm.TextSize = 10
 	cpConfirm.ZIndex = 505
 	Instance.new("UICorner", cpConfirm).CornerRadius = UDim.new(0, 4)
@@ -362,7 +362,7 @@ function ConcordeLib.new(config)
 	ht.BackgroundTransparency = 1
 	ht.Text = "Home"
 	ht.TextColor3 = TEXT_COL
-	ht.Font = Enum.Font.GothamBold
+	ht.Font = Enum.Font.MontserratBold
 	ht.TextSize = 12
 	ht.TextXAlignment = Enum.TextXAlignment.Left
 	self._ht = ht
@@ -373,7 +373,7 @@ function ConcordeLib.new(config)
 	st.BackgroundTransparency = 1
 	st.Text = config.Subtitle or "Powered by ConcordeLib"
 	st.TextColor3 = Color3.fromRGB(110, 112, 128)
-	st.Font = Enum.Font.Gotham
+	st.Font = Enum.Font.Montserrat
 	st.TextSize = 10
 	st.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -395,7 +395,7 @@ function ConcordeLib.new(config)
 	tdt.BackgroundTransparency = 1
 	tdt.Text = "SubPage"
 	tdt.TextColor3 = Color3.fromRGB(240, 240, 245)
-	tdt.Font = Enum.Font.GothamMedium
+	tdt.Font = Enum.Font.MontserratMedium
 	tdt.TextSize = 10
 	tdt.TextXAlignment = Enum.TextXAlignment.Left
 	tdt.ZIndex = 51
@@ -449,7 +449,7 @@ function ConcordeLib.new(config)
 			b.BackgroundTransparency = 1
 			b.Text = "  " .. subObj.Name
 			b.TextColor3 = Color3.fromRGB(200, 202, 215)
-			b.Font = Enum.Font.GothamMedium
+			b.Font = Enum.Font.MontserratMedium
 			b.TextSize = 10
 			b.TextXAlignment = Enum.TextXAlignment.Left
 			b.ZIndex = 101
@@ -566,7 +566,7 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(255, 255, 255)
-		l.Font = Enum.Font.GothamBold
+		l.Font = Enum.Font.MontserratBold
 		l.TextSize = 11
 		l.TextXAlignment = Enum.TextXAlignment.Left
 	end
@@ -581,7 +581,7 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(200, 202, 215)
-		l.Font = Enum.Font.GothamMedium
+		l.Font = Enum.Font.MontserratMedium
 		l.TextSize = 10.5
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -629,7 +629,7 @@ function ConcordeLib.new(config)
 				kb.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
 				kb.Text = extraConfig.keybind
 				kb.TextColor3 = Color3.fromRGB(150, 152, 168)
-				kb.Font = Enum.Font.GothamMedium
+				kb.Font = Enum.Font.MontserratMedium
 				kb.TextSize = 9
 				kb.LayoutOrder = 2
 				Instance.new("UICorner", kb).CornerRadius = UDim.new(0, 3)
@@ -674,7 +674,7 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(200, 202, 215)
-		l.Font = Enum.Font.GothamMedium
+		l.Font = Enum.Font.MontserratMedium
 		l.TextSize = 10.5
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -703,7 +703,7 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(110, 112, 128)
-		l.Font = Enum.Font.Gotham
+		l.Font = Enum.Font.Montserrat
 		l.TextSize = 10
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -724,7 +724,7 @@ function ConcordeLib.new(config)
 		vl.BackgroundTransparency = 1
 		vl.Text = default
 		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
-		vl.Font = Enum.Font.GothamMedium
+		vl.Font = Enum.Font.MontserratMedium
 		vl.TextSize = 10
 		vl.TextXAlignment = Enum.TextXAlignment.Left
 		vl.ZIndex = 12
@@ -738,7 +738,7 @@ function ConcordeLib.new(config)
 		ApplyIcon(arr, "chevron-down")
 
 		local dropList = Instance.new("Frame", f)
-		dropList.Size = UDim2.new(1, 0, 0, #options * 22)
+		dropList.Size = UDim2.new(1, 0, 0, 0)
 		dropList.Position = UDim2.new(0, 0, 1, 3)
 		dropList.BackgroundColor3 = Color3.fromRGB(22, 23, 31)
 		dropList.Visible = false
@@ -751,23 +751,33 @@ function ConcordeLib.new(config)
 
 		f.MouseButton1Click:Connect(function() dropList.Visible = not dropList.Visible end)
 
-		for _, opt in ipairs(options) do
-			local obtn = Instance.new("TextButton", dropList)
-			obtn.Size = UDim2.new(1, 0, 0, 22)
-			obtn.BackgroundTransparency = 1
-			obtn.Text = "  " .. opt
-			obtn.TextColor3 = Color3.fromRGB(200, 202, 215)
-			obtn.Font = Enum.Font.GothamMedium
-			obtn.TextSize = 9.5
-			obtn.TextXAlignment = Enum.TextXAlignment.Left
-			obtn.ZIndex = 31
-			obtn.MouseButton1Click:Connect(function()
-				vl.Text = opt
-				dropList.Visible = false
-				notify(text .. " → " .. opt)
-				if callback then callback(opt) end
-			end)
+		local function refreshOptions(newOptions)
+			for _, child in ipairs(dropList:GetChildren()) do
+				if child:IsA("TextButton") then child:Destroy() end
+			end
+			dropList.Size = UDim2.new(1, 0, 0, #newOptions * 22)
+			for _, opt in ipairs(newOptions) do
+				local obtn = Instance.new("TextButton", dropList)
+				obtn.Size = UDim2.new(1, 0, 0, 22)
+				obtn.BackgroundTransparency = 1
+				obtn.Text = "  " .. opt
+				obtn.TextColor3 = Color3.fromRGB(200, 202, 215)
+				obtn.Font = Enum.Font.MontserratMedium
+				obtn.TextSize = 9.5
+				obtn.TextXAlignment = Enum.TextXAlignment.Left
+				obtn.ZIndex = 31
+				obtn.MouseButton1Click:Connect(function()
+					vl.Text = opt
+					dropList.Visible = false
+					notify(text .. " → " .. opt)
+					if callback then callback(opt) end
+				end)
+			end
 		end
+
+		refreshOptions(options)
+
+		return { Refresh = refreshOptions }
 	end
 
 	function self:Slider(label, unit, parent, min, max, default, callback)
@@ -781,7 +791,7 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = label
 		l.TextColor3 = Color3.fromRGB(150, 152, 168)
-		l.Font = Enum.Font.GothamMedium
+		l.Font = Enum.Font.MontserratMedium
 		l.TextSize = 10.5
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -791,7 +801,7 @@ function ConcordeLib.new(config)
 		vl.BackgroundTransparency = 1
 		vl.Text = tostring(default) .. unit
 		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
-		vl.Font = Enum.Font.GothamMedium
+		vl.Font = Enum.Font.MontserratMedium
 		vl.TextSize = 10
 		vl.TextXAlignment = Enum.TextXAlignment.Right
 
@@ -849,7 +859,7 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = label
 		l.TextColor3 = Color3.fromRGB(150, 152, 168)
-		l.Font = Enum.Font.GothamMedium
+		l.Font = Enum.Font.MontserratMedium
 		l.TextSize = 10.5
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -859,7 +869,7 @@ function ConcordeLib.new(config)
 		vl.BackgroundTransparency = 1
 		vl.Text = tostring(defaultLow) .. unit .. " - " .. tostring(defaultHigh) .. unit
 		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
-		vl.Font = Enum.Font.GothamMedium
+		vl.Font = Enum.Font.MontserratMedium
 		vl.TextSize = 10
 		vl.TextXAlignment = Enum.TextXAlignment.Right
 
@@ -934,7 +944,7 @@ function ConcordeLib.new(config)
 		b.BackgroundColor3 = Color3.fromRGB(20, 21, 28)
 		b.Text = text
 		b.TextColor3 = Color3.fromRGB(240, 240, 245)
-		b.Font = Enum.Font.GothamMedium
+		b.Font = Enum.Font.MontserratMedium
 		b.TextSize = 10
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
 		local bs = Instance.new("UIStroke", b)
@@ -954,7 +964,7 @@ function ConcordeLib.new(config)
 		b.PlaceholderText = placeholder
 		b.PlaceholderColor3 = Color3.fromRGB(80, 82, 98)
 		b.TextColor3 = Color3.fromRGB(240, 240, 245)
-		b.Font = Enum.Font.Gotham
+		b.Font = Enum.Font.Montserrat
 		b.TextSize = 10
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
 		local bs = Instance.new("UIStroke", b)
@@ -1023,16 +1033,19 @@ function ConcordeLib.new(config)
 		local configsList = getConfigs()
 		local currentConfig = configsList[1] or "Default"
 
-		self:Dropdown("Select Config", currentConfig, configsList, col1, function(selected)
+		local cfgDrop = self:Dropdown("Select Config", currentConfig, configsList, col1, function(selected)
 			currentConfig = selected
 		end)
+
 		self:Button("Save Config", col1, function()
 			local name = (cfgInput.Text ~= "" and cfgInput.Text or currentConfig)
 			if writefile then
 				writefile(folderName .. "/" .. name .. ".json", "{}")
 			end
 			notify("Saved: " .. name)
+			cfgDrop.Refresh(getConfigs())
 		end)
+
 		self:Button("Load Config", col1, function() notify("Loaded: " .. currentConfig) end)
 		self:Button("Overwrite Config", col1, function()
 			if writefile then
@@ -1057,6 +1070,9 @@ function ConcordeLib.new(config)
 				delfile(folderName .. "/" .. currentConfig .. ".json")
 			end
 			notify("Deleted: " .. currentConfig)
+			local newConfigs = getConfigs()
+			cfgDrop.Refresh(newConfigs)
+			currentConfig = newConfigs[1] or "Default"
 		end)
 	end
 
