@@ -104,8 +104,8 @@ function ConcordeLib.new(config)
 		nt.BackgroundTransparency = 1
 		nt.Text = msg
 		nt.TextColor3 = Color3.fromRGB(235, 238, 245)
-		nt.Font = Enum.Font.MontserratMedium
-		nt.TextSize = 10.5
+		nt.Font = Enum.Font.Ubuntu
+		nt.TextSize = 11.5
 		nt.TextXAlignment = Enum.TextXAlignment.Left
 		ts:Create(n, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
 		task.delay(2.5, function()
@@ -197,8 +197,8 @@ function ConcordeLib.new(config)
 	cpConfirm.BackgroundColor3 = ACCENT
 	cpConfirm.Text = "Done"
 	cpConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
-	cpConfirm.Font = Enum.Font.MontserratBold
-	cpConfirm.TextSize = 10
+	cpConfirm.Font = Enum.Font.Ubuntu
+	cpConfirm.TextSize = 11
 	cpConfirm.ZIndex = 505
 	Instance.new("UICorner", cpConfirm).CornerRadius = UDim.new(0, 4)
 
@@ -362,23 +362,23 @@ function ConcordeLib.new(config)
 	ht.BackgroundTransparency = 1
 	ht.Text = "Home"
 	ht.TextColor3 = TEXT_COL
-	ht.Font = Enum.Font.MontserratBold
-	ht.TextSize = 12
+	ht.Font = Enum.Font.Ubuntu
+	ht.TextSize = 13
 	ht.TextXAlignment = Enum.TextXAlignment.Left
 	self._ht = ht
 
 	local st = Instance.new("TextLabel", mc)
 	st.Size = UDim2.new(1, -140, 0, 14)
-	st.Position = UDim2.new(0, 4, 0, 20)
+	st.Position = UDim2.new(0, 4, 0, 22)
 	st.BackgroundTransparency = 1
 	st.Text = config.Subtitle or "Powered by ConcordeLib"
 	st.TextColor3 = Color3.fromRGB(110, 112, 128)
-	st.Font = Enum.Font.Montserrat
-	st.TextSize = 10
+	st.Font = Enum.Font.Ubuntu
+	st.TextSize = 11
 	st.TextXAlignment = Enum.TextXAlignment.Left
 
 	local topDrop = Instance.new("TextButton", mc)
-	topDrop.Size = UDim2.new(0, 115, 0, 24)
+	topDrop.Size = UDim2.new(0, 115, 0, 26)
 	topDrop.Position = UDim2.new(1, -119, 0, 8)
 	topDrop.BackgroundColor3 = Color3.fromRGB(16, 17, 23)
 	topDrop.Text = ""
@@ -395,8 +395,8 @@ function ConcordeLib.new(config)
 	tdt.BackgroundTransparency = 1
 	tdt.Text = "SubPage"
 	tdt.TextColor3 = Color3.fromRGB(240, 240, 245)
-	tdt.Font = Enum.Font.MontserratMedium
-	tdt.TextSize = 10
+	tdt.Font = Enum.Font.Ubuntu
+	tdt.TextSize = 11
 	tdt.TextXAlignment = Enum.TextXAlignment.Left
 	tdt.ZIndex = 51
 
@@ -425,8 +425,8 @@ function ConcordeLib.new(config)
 	end)
 
 	local tabContainer = Instance.new("Frame", mc)
-	tabContainer.Size = UDim2.new(1, 0, 1, -42)
-	tabContainer.Position = UDim2.new(0, 0, 0, 42)
+	tabContainer.Size = UDim2.new(1, 0, 1, -44)
+	tabContainer.Position = UDim2.new(0, 0, 0, 44)
 	tabContainer.BackgroundTransparency = 1
 
 	local sidebarTabs = {}
@@ -442,15 +442,15 @@ function ConcordeLib.new(config)
 			return
 		end
 		topDrop.Visible = true
-		topDropList.Size = UDim2.new(1, 0, 0, #currentActiveTab.SubPages * 26)
+		topDropList.Size = UDim2.new(1, 0, 0, #currentActiveTab.SubPages * 28)
 		for idx, subObj in ipairs(currentActiveTab.SubPages) do
 			local b = Instance.new("TextButton", topDropList)
-			b.Size = UDim2.new(1, 0, 0, 26)
+			b.Size = UDim2.new(1, 0, 0, 28)
 			b.BackgroundTransparency = 1
 			b.Text = "  " .. subObj.Name
 			b.TextColor3 = Color3.fromRGB(200, 202, 215)
-			b.Font = Enum.Font.MontserratMedium
-			b.TextSize = 10
+			b.Font = Enum.Font.Ubuntu
+			b.TextSize = 11
 			b.TextXAlignment = Enum.TextXAlignment.Left
 			b.ZIndex = 101
 			b.MouseButton1Click:Connect(function()
@@ -562,18 +562,18 @@ function ConcordeLib.new(config)
 
 	function self:Title(text, parent)
 		local l = Instance.new("TextLabel", parent)
-		l.Size = UDim2.new(1, 0, 0, 18)
+		l.Size = UDim2.new(1, 0, 0, 20)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(255, 255, 255)
-		l.Font = Enum.Font.MontserratBold
-		l.TextSize = 11
+		l.Font = Enum.Font.Ubuntu
+		l.TextSize = 12
 		l.TextXAlignment = Enum.TextXAlignment.Left
 	end
 
 	function self:Toggle(text, state, parent, extraConfig)
 		local f = Instance.new("Frame", parent)
-		f.Size = UDim2.new(1, 0, 0, 20)
+		f.Size = UDim2.new(1, 0, 0, 22)
 		f.BackgroundTransparency = 1
 
 		local l = Instance.new("TextLabel", f)
@@ -581,8 +581,8 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(200, 202, 215)
-		l.Font = Enum.Font.MontserratMedium
-		l.TextSize = 10.5
+		l.Font = Enum.Font.Ubuntu
+		l.TextSize = 12
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
 		local rightContainer = Instance.new("Frame", f)
@@ -596,22 +596,22 @@ function ConcordeLib.new(config)
 		rList.Padding = UDim.new(0, 6)
 
 		local btn = Instance.new("TextButton", rightContainer)
-		btn.Size = UDim2.new(0, 26, 0, 14)
+		btn.Size = UDim2.new(0, 28, 0, 16)
 		btn.BackgroundColor3 = state and ACCENT or Color3.fromRGB(35, 36, 46)
 		btn.Text = ""
 		btn.LayoutOrder = 10
 		Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
 
 		local ind = Instance.new("Frame", btn)
-		ind.Size = UDim2.new(0, 10, 0, 10)
-		ind.Position = state and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5)
+		ind.Size = UDim2.new(0, 12, 0, 12)
+		ind.Position = state and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
 		ind.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		Instance.new("UICorner", ind).CornerRadius = UDim.new(1, 0)
 
 		if extraConfig then
 			if extraConfig.color then
 				local cBox = Instance.new("TextButton", rightContainer)
-				cBox.Size = UDim2.new(0, 14, 0, 14)
+				cBox.Size = UDim2.new(0, 16, 0, 16)
 				cBox.BackgroundColor3 = extraConfig.color
 				cBox.Text = ""
 				cBox.LayoutOrder = 1
@@ -625,12 +625,12 @@ function ConcordeLib.new(config)
 			end
 			if extraConfig.keybind then
 				local kb = Instance.new("TextButton", rightContainer)
-				kb.Size = UDim2.new(0, 24, 0, 14)
+				kb.Size = UDim2.new(0, 26, 0, 16)
 				kb.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
 				kb.Text = extraConfig.keybind
 				kb.TextColor3 = Color3.fromRGB(150, 152, 168)
-				kb.Font = Enum.Font.MontserratMedium
-				kb.TextSize = 9
+				kb.Font = Enum.Font.Ubuntu
+				kb.TextSize = 10
 				kb.LayoutOrder = 2
 				Instance.new("UICorner", kb).CornerRadius = UDim.new(0, 3)
 				local kbs = Instance.new("UIStroke", kb)
@@ -657,7 +657,7 @@ function ConcordeLib.new(config)
 		btn.MouseButton1Click:Connect(function()
 			on = not on
 			btn.BackgroundColor3 = on and ACCENT or Color3.fromRGB(35, 36, 46)
-			ind:TweenPosition(on and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5), "Out", "Sine", 0.12, true)
+			ind:TweenPosition(on and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6), "Out", "Sine", 0.12, true)
 			notify(text .. ": " .. tostring(on))
 		end)
 
@@ -666,7 +666,7 @@ function ConcordeLib.new(config)
 
 	function self:ColorTile(text, initCol, parent, callback)
 		local f = Instance.new("Frame", parent)
-		f.Size = UDim2.new(1, 0, 0, 20)
+		f.Size = UDim2.new(1, 0, 0, 22)
 		f.BackgroundTransparency = 1
 
 		local l = Instance.new("TextLabel", f)
@@ -674,13 +674,13 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(200, 202, 215)
-		l.Font = Enum.Font.MontserratMedium
-		l.TextSize = 10.5
+		l.Font = Enum.Font.Ubuntu
+		l.TextSize = 12
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
 		local cBox = Instance.new("TextButton", f)
-		cBox.Size = UDim2.new(0, 16, 0, 16)
-		cBox.Position = UDim2.new(1, -16, 0.5, -8)
+		cBox.Size = UDim2.new(0, 18, 0, 18)
+		cBox.Position = UDim2.new(1, -18, 0.5, -9)
 		cBox.BackgroundColor3 = initCol
 		cBox.Text = ""
 		Instance.new("UICorner", cBox).CornerRadius = UDim.new(0, 4)
@@ -694,22 +694,22 @@ function ConcordeLib.new(config)
 
 	function self:Dropdown(text, default, options, parent, callback)
 		local wrap = Instance.new("Frame", parent)
-		wrap.Size = UDim2.new(1, 0, 0, 38)
+		wrap.Size = UDim2.new(1, 0, 0, 42)
 		wrap.BackgroundTransparency = 1
 		wrap.ZIndex = 10
 
 		local l = Instance.new("TextLabel", wrap)
-		l.Size = UDim2.new(1, 0, 0, 14)
+		l.Size = UDim2.new(1, 0, 0, 16)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(110, 112, 128)
-		l.Font = Enum.Font.Montserrat
-		l.TextSize = 10
+		l.Font = Enum.Font.Ubuntu
+		l.TextSize = 11
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
 		local f = Instance.new("TextButton", wrap)
-		f.Size = UDim2.new(1, 0, 0, 22)
-		f.Position = UDim2.new(0, 0, 0, 16)
+		f.Size = UDim2.new(1, 0, 0, 24)
+		f.Position = UDim2.new(0, 0, 0, 18)
 		f.BackgroundColor3 = Color3.fromRGB(20, 21, 28)
 		f.Text = ""
 		f.ZIndex = 11
@@ -724,8 +724,8 @@ function ConcordeLib.new(config)
 		vl.BackgroundTransparency = 1
 		vl.Text = default
 		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
-		vl.Font = Enum.Font.MontserratMedium
-		vl.TextSize = 10
+		vl.Font = Enum.Font.Ubuntu
+		vl.TextSize = 11
 		vl.TextXAlignment = Enum.TextXAlignment.Left
 		vl.ZIndex = 12
 
@@ -755,15 +755,15 @@ function ConcordeLib.new(config)
 			for _, child in ipairs(dropList:GetChildren()) do
 				if child:IsA("TextButton") then child:Destroy() end
 			end
-			dropList.Size = UDim2.new(1, 0, 0, #newOptions * 22)
+			dropList.Size = UDim2.new(1, 0, 0, #newOptions * 24)
 			for _, opt in ipairs(newOptions) do
 				local obtn = Instance.new("TextButton", dropList)
-				obtn.Size = UDim2.new(1, 0, 0, 22)
+				obtn.Size = UDim2.new(1, 0, 0, 24)
 				obtn.BackgroundTransparency = 1
 				obtn.Text = "  " .. opt
 				obtn.TextColor3 = Color3.fromRGB(200, 202, 215)
-				obtn.Font = Enum.Font.MontserratMedium
-				obtn.TextSize = 9.5
+				obtn.Font = Enum.Font.Ubuntu
+				obtn.TextSize = 11
 				obtn.TextXAlignment = Enum.TextXAlignment.Left
 				obtn.ZIndex = 31
 				obtn.MouseButton1Click:Connect(function()
@@ -783,7 +783,7 @@ function ConcordeLib.new(config)
 	function self:Slider(label, unit, parent, min, max, default, callback)
 		unit = unit or ""
 		local f = Instance.new("Frame", parent)
-		f.Size = UDim2.new(1, 0, 0, 20)
+		f.Size = UDim2.new(1, 0, 0, 22)
 		f.BackgroundTransparency = 1
 
 		local l = Instance.new("TextLabel", f)
@@ -791,8 +791,8 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = label
 		l.TextColor3 = Color3.fromRGB(150, 152, 168)
-		l.Font = Enum.Font.MontserratMedium
-		l.TextSize = 10.5
+		l.Font = Enum.Font.Ubuntu
+		l.TextSize = 12
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
 		local vl = Instance.new("TextLabel", f)
@@ -801,8 +801,8 @@ function ConcordeLib.new(config)
 		vl.BackgroundTransparency = 1
 		vl.Text = tostring(default) .. unit
 		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
-		vl.Font = Enum.Font.MontserratMedium
-		vl.TextSize = 10
+		vl.Font = Enum.Font.Ubuntu
+		vl.TextSize = 11
 		vl.TextXAlignment = Enum.TextXAlignment.Right
 
 		local bg = Instance.new("TextButton", f)
@@ -851,7 +851,7 @@ function ConcordeLib.new(config)
 	function self:RangeSlider(label, unit, parent, min, max, defaultLow, defaultHigh, callback)
 		unit = unit or ""
 		local f = Instance.new("Frame", parent)
-		f.Size = UDim2.new(1, 0, 0, 20)
+		f.Size = UDim2.new(1, 0, 0, 22)
 		f.BackgroundTransparency = 1
 
 		local l = Instance.new("TextLabel", f)
@@ -859,8 +859,8 @@ function ConcordeLib.new(config)
 		l.BackgroundTransparency = 1
 		l.Text = label
 		l.TextColor3 = Color3.fromRGB(150, 152, 168)
-		l.Font = Enum.Font.MontserratMedium
-		l.TextSize = 10.5
+		l.Font = Enum.Font.Ubuntu
+		l.TextSize = 12
 		l.TextXAlignment = Enum.TextXAlignment.Left
 
 		local vl = Instance.new("TextLabel", f)
@@ -869,8 +869,8 @@ function ConcordeLib.new(config)
 		vl.BackgroundTransparency = 1
 		vl.Text = tostring(defaultLow) .. unit .. " - " .. tostring(defaultHigh) .. unit
 		vl.TextColor3 = Color3.fromRGB(240, 240, 245)
-		vl.Font = Enum.Font.MontserratMedium
-		vl.TextSize = 10
+		vl.Font = Enum.Font.Ubuntu
+		vl.TextSize = 11
 		vl.TextXAlignment = Enum.TextXAlignment.Right
 
 		local track = Instance.new("Frame", f)
@@ -940,12 +940,12 @@ function ConcordeLib.new(config)
 
 	function self:Button(text, parent, callback)
 		local b = Instance.new("TextButton", parent)
-		b.Size = UDim2.new(1, 0, 0, 24)
+		b.Size = UDim2.new(1, 0, 0, 26)
 		b.BackgroundColor3 = Color3.fromRGB(20, 21, 28)
 		b.Text = text
 		b.TextColor3 = Color3.fromRGB(240, 240, 245)
-		b.Font = Enum.Font.MontserratMedium
-		b.TextSize = 10
+		b.Font = Enum.Font.Ubuntu
+		b.TextSize = 11
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
 		local bs = Instance.new("UIStroke", b)
 		bs.Color = Color3.fromRGB(28, 30, 40)
@@ -958,14 +958,14 @@ function ConcordeLib.new(config)
 
 	function self:TextBox(placeholder, parent, callback)
 		local b = Instance.new("TextBox", parent)
-		b.Size = UDim2.new(1, 0, 0, 24)
+		b.Size = UDim2.new(1, 0, 0, 26)
 		b.BackgroundColor3 = Color3.fromRGB(20, 21, 28)
 		b.Text = ""
 		b.PlaceholderText = placeholder
 		b.PlaceholderColor3 = Color3.fromRGB(80, 82, 98)
 		b.TextColor3 = Color3.fromRGB(240, 240, 245)
-		b.Font = Enum.Font.Montserrat
-		b.TextSize = 10
+		b.Font = Enum.Font.Ubuntu
+		b.TextSize = 11
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
 		local bs = Instance.new("UIStroke", b)
 		bs.Color = Color3.fromRGB(28, 30, 40)
