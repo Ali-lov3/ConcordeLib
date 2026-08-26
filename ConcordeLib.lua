@@ -288,8 +288,8 @@ function ConcordeLib.new(config)
 	ApplyIcon(obIcon, LOGO)
 
 	local mf = Instance.new("Frame", sg)
-	mf.Size = UDim2.new(0, 620, 0, 400)
-	mf.Position = UDim2.new(0.5, -310, 0.5, -200)
+	mf.Size = UDim2.new(0, 620, 0, 360)
+	mf.Position = UDim2.new(0.5, -310, 0.5, -180)
 	mf.BackgroundColor3 = BG
 	mf.BorderSizePixel = 0
 	mf.Visible = true
@@ -561,14 +561,24 @@ function ConcordeLib.new(config)
 	end
 
 	function self:Title(text, parent)
-		local l = Instance.new("TextLabel", parent)
-		l.Size = UDim2.new(1, 0, 0, 24)
+		local container = Instance.new("Frame", parent)
+		container.Size = UDim2.new(1, 0, 0, 32)
+		container.BackgroundTransparency = 1
+
+		local l = Instance.new("TextLabel", container)
+		l.Size = UDim2.new(1, 0, 1, -6)
 		l.BackgroundTransparency = 1
 		l.Text = text
 		l.TextColor3 = Color3.fromRGB(255, 255, 255)
 		l.Font = Enum.Font.Ubuntu
 		l.TextSize = 15
 		l.TextXAlignment = Enum.TextXAlignment.Left
+
+		local line = Instance.new("Frame", container)
+		line.Size = UDim2.new(1, 0, 0, 1)
+		line.Position = UDim2.new(0, 0, 1, -1)
+		line.BackgroundColor3 = Color3.fromRGB(34, 36, 48)
+		line.BorderSizePixel = 0
 	end
 
 	function self:Toggle(text, state, parent, extraConfig)
