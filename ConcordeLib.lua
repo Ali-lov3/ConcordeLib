@@ -1,10 +1,10 @@
-Local ConcordeLib = {}
+local ConcordeLib = {}
 ConcordeLib.__index = ConcordeLib
 
-local cg  = game:GetService("CoreGui")
-local p   = game:GetService("Players").LocalPlayer
+local cg = game:GetService("CoreGui")
+local p = game:GetService("Players").LocalPlayer
 local uis = game:GetService("UserInputService")
-local ts  = game:GetService("TweenService")
+local ts = game:GetService("TweenService")
 
 local Lucide
 pcall(function()
@@ -20,8 +20,8 @@ local function ResolveIcon(Icon)
 		if type(Lucide) == "function" then
 			local ok, Data = pcall(Lucide, Name)
 			if ok and type(Data) == "table" then
-				local Id     = Data.id or Data.Id or Data[1]
-				local Size   = Data.imageRectSize or Data.ImageRectSize or Data[2]
+				local Id = Data.id or Data.Id or Data[1]
+				local Size = Data.imageRectSize or Data.ImageRectSize or Data[2]
 				local Offset = Data.imageRectOffset or Data.imageRectPosition or Data.ImageRectOffset or Data[3]
 				if Id then return "rbxassetid://" .. tostring(Id), Offset, Size end
 			end
@@ -50,18 +50,18 @@ local function ApplyIcon(Object, Icon)
 	local Image, Offset, Size = ResolveIcon(Icon)
 	Object.Image = Image
 	if Offset then Object.ImageRectOffset = ToVector2(Offset) end
-	if Size   then Object.ImageRectSize   = ToVector2(Size)   end
+	if Size then Object.ImageRectSize = ToVector2(Size) end
 end
 
 function ConcordeLib.new(config)
 	config = config or {}
 	local self = setmetatable({}, ConcordeLib)
 
-	local LOGO        = config.Logo       or "rbxassetid://0"
-	local ACCENT      = config.Accent     or Color3.fromRGB(240, 45, 70)
-	local BG          = config.Background or Color3.fromRGB(11, 12, 16)
-	local SIDEBAR_COL = config.Sidebar    or Color3.fromRGB(14, 15, 20)
-	local TEXT_COL    = config.TextColor  or Color3.fromRGB(240, 240, 245)
+	local LOGO = config.Logo or "rbxassetid://0"
+	local ACCENT = config.Accent or Color3.fromRGB(240, 45, 70)
+	local BG = config.Background or Color3.fromRGB(11, 12, 16)
+	local SIDEBAR_COL = config.Sidebar or Color3.fromRGB(14, 15, 20)
+	local TEXT_COL = config.TextColor or Color3.fromRGB(240, 240, 245)
 
 	local sg = Instance.new("ScreenGui")
 	sg.Name = "ConcordeUi"
