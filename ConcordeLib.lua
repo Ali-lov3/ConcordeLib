@@ -1,4 +1,4 @@
-local ConcordeLib = {}
+Local ConcordeLib = {}
 ConcordeLib.__index = ConcordeLib
 
 local cg  = game:GetService("CoreGui")
@@ -996,18 +996,68 @@ function ConcordeLib.new(config)
 		end)
 	end
 
-	function self:ConfigApply(col1, col2)
+	function self:ConfigApply(col1, col2, folderName)
+		folderName = folderName or "ConcordeConfigs"
+		if makefolder and isfolder and not isfolder(folderName) then
+			makefolder(folderName)
+		end
+
+		local function getConfigs()
+			local cfgs = {}
+			if isfolder and listfiles and isfolder(folderName) then
+				for _, file in ipairs(listfiles(folderName)) do
+					local fileName = file:match("([^/\\]+)%.json$")
+					if fileName then
+						table.insert(cfgs, fileName)
+					end
+				end
+			end
+			if #cfgs == 0 then
+				table.insert(cfgs, "Default")
+			end
+			return cfgs
+		end
+
 		self:Title("Config", col1)
 		local cfgInput = self:TextBox("Config Name", col1)
-		self:Dropdown("Select Config", "Default.json", {"Default.json", "Legit.json", "Rage.json"}, col1)
-		self:Button("Save Config", col1, function()
-			notify("Saved: " .. (cfgInput.Text ~= "" and cfgInput.Text or "Default"))
+		local configsList = getConfigs()
+		local currentConfig = configsList[1] or "Default"
+
+		self:Dropdown("Select Config", currentConfig, configsList, col1, function(selected)
+			currentConfig = selected
 		end)
-		self:Button("Load Config", col1, function() notify("Loaded config") end)
-		self:Button("Overwrite Config", col1, function() notify("Overwrote config") end)
-		self:Button("Set as Autoload", col1, function() notify("Set as autoload") end)
-		self:Button("Remove Autoload", col1, function() notify("Removed autoload") end)
-		self:Button("Delete Config", col1, function() notify("Deleted config") end)
+		self:Button("Save Config", col1, function()
+			local name = (cfgInput.Text ~= "" and cfgInput.Text or currentConfig)
+			if writefile then
+				writefile(folderName .. "/" .. name .. ".json", "{}")
+			end
+			notify("Saved: " .. name)
+		end)
+		self:Button("Load Config", col1, function() notify("Loaded: " .. currentConfig) end)
+		self:Button("Overwrite Config", col1, function()
+			if writefile then
+				writefile(folderName .. "/" .. currentConfig .. ".json", "{}")
+			end
+			notify("Overwrote: " .. currentConfig)
+		end)
+		self:Button("Set as Autoload", col1, function()
+			if writefile then
+				writefile(folderName .. "/autoload.txt", currentConfig)
+			end
+			notify("Autoload set: " .. currentConfig)
+		end)
+		self:Button("Remove Autoload", col1, function()
+			if delfile and isfile and isfile(folderName .. "/autoload.txt") then
+				delfile(folderName .. "/autoload.txt")
+			end
+			notify("Removed autoload")
+		end)
+		self:Button("Delete Config", col1, function()
+			if delfile and isfile and isfile(folderName .. "/" .. currentConfig .. ".json") then
+				delfile(folderName .. "/" .. currentConfig .. ".json")
+			end
+			notify("Deleted: " .. currentConfig)
+		end)
 	end
 
 	return self
