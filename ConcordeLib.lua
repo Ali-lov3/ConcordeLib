@@ -62,6 +62,7 @@ function ConcordeLib.new(config)
 	local BG = config.Background or Color3.fromRGB(11, 12, 16)
 	local SIDEBAR_COL = config.Sidebar or Color3.fromRGB(14, 15, 20)
 	local TEXT_COL = config.TextColor or Color3.fromRGB(240, 240, 245)
+	local TOGGLE_KEY = config.Keybind or Enum.KeyCode.RightShift
 
 	local sg = Instance.new("ScreenGui")
 	sg.Name = "ConcordeUi"
@@ -274,6 +275,7 @@ function ConcordeLib.new(config)
 	ob.Position = UDim2.new(0, 20, 0, 20)
 	ob.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 	ob.AutoButtonColor = false
+	ob.Visible = uis.TouchEnabled
 	Instance.new("UICorner", ob).CornerRadius = UDim.new(0, 10)
 	local obs = Instance.new("UIStroke", ob)
 	obs.Color = ACCENT
@@ -298,6 +300,12 @@ function ConcordeLib.new(config)
 	mfs.Color = Color3.fromRGB(25, 27, 36)
 	mfs.Thickness = 1.2
 	self._mf = mf
+
+	uis.InputBegan:Connect(function(input, gameProcessed)
+		if not gameProcessed and input.KeyCode == TOGGLE_KEY then
+			mf.Visible = not mf.Visible
+		end
+	end)
 
 	local dt, di, ds, sp
 	mf.InputBegan:Connect(function(i)
@@ -779,7 +787,7 @@ function ConcordeLib.new(config)
 				obtn.MouseButton1Click:Connect(function()
 					vl.Text = opt
 					dropList.Visible = false
-					notify(text .. " → " .. opt)
+					notify(text .. " -> " .. opt)
 					if callback then callback(opt) end
 				end)
 			end
@@ -1013,6 +1021,51 @@ function ConcordeLib.new(config)
 			sbf.BackgroundColor3 = Color3.fromRGB(14, 15, 20)
 			ht.TextColor3 = Color3.fromRGB(240, 240, 245)
 			notify("Theme reset!")
+		end)
+	end
+
+	function self:KeybindApply(parent)
+		self:Title("Menu Toggle", parent)
+		local f = Instance.new("Frame", parent)
+		f.Size = UDim2.new(1, 0, 0, 32)
+		f.BackgroundTransparency = 1
+
+		local l = Instance.new("TextLabel", f)
+		l.Size = UDim2.new(1, -120, 1, 0)
+		l.BackgroundTransparency = 1
+		l.Text = "Menu Keybind"
+		l.TextColor3 = Color3.fromRGB(200, 202, 215)
+		l.Font = Enum.Font.Ubuntu
+		l.TextSize = 14
+		l.TextXAlignment = Enum.TextXAlignment.Left
+
+		local kb = Instance.new("TextButton", f)
+		kb.Size = UDim2.new(0, 80, 0, 24)
+		kb.Position = UDim2.new(1, -80, 0.5, -12)
+		kb.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
+		kb.Text = TOGGLE_KEY.Name
+		kb.TextColor3 = Color3.fromRGB(150, 152, 168)
+		kb.Font = Enum.Font.Ubuntu
+		kb.TextSize = 12
+		Instance.new("UICorner", kb).CornerRadius = UDim.new(0, 4)
+		local kbs = Instance.new("UIStroke", kb)
+		kbs.Color = Color3.fromRGB(32, 34, 46)
+		kbs.Thickness = 1
+
+		local listening = false
+		kb.MouseButton1Click:Connect(function()
+			if listening then return end
+			listening = true
+			kb.Text = "..."
+			local conn
+			conn = uis.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.Keyboard then
+					TOGGLE_KEY = input.KeyCode
+					kb.Text = TOGGLE_KEY.Name
+					listening = false
+					conn:Disconnect()
+				end
+			end)
 		end)
 	end
 
