@@ -1,4 +1,4 @@
-local ConcordeLib = {}
+Local ConcordeLib = {}
 ConcordeLib.__index = ConcordeLib
 
 local cg = game:GetService("CoreGui")
@@ -227,13 +227,13 @@ local function updateESP()
 		if not onScreen then hideSet(set) continue end
 
 		local headPart = character:FindFirstChild("Head") or rootPart
-		local headPos = cam:WorldToViewportPoint(headPart.Position)
-		local feetPos = cam:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 3, 0))
+		local topPos = cam:WorldToViewportPoint(headPart.Position + Vector3.new(0, 1.1, 0))
+		local bottomPos = cam:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 3.2, 0))
 
-		local height = math.abs(headPos.Y - feetPos.Y)
-		local width = height * 0.45
+		local height = math.abs(topPos.Y - bottomPos.Y)
+		local width = height * 0.55
 		local x = rootPos.X - width / 2
-		local y = headPos.Y
+		local y = topPos.Y
 		local O = 1
 
 		if espSettings.box then
