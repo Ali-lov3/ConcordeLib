@@ -12,10 +12,45 @@ local espSettings = {
 	enabled = false,
 	box = false,
 	boxColor = Color3.fromRGB(240, 45, 70),
-	healthBar = false
+	healthBar = false,
+	name = false,
+	nameColor = Color3.fromRGB(255, 255, 255),
+	distance = false,
+	distanceColor = Color3.fromRGB(200, 200, 200),
+	weapon = false,
+	weaponColor = Color3.fromRGB(255, 255, 100),
+	healthText = false,
+	healthTextColor = Color3.fromRGB(255, 255, 255),
+	skeleton = false,
+	skeletonColor = Color3.fromRGB(255, 255, 255)
 }
 
 local GRADIENT_STEPS = 32
+
+local R6Joints = {
+	{"Head", "Torso"},
+	{"Torso", "Left Arm"},
+	{"Torso", "Right Arm"},
+	{"Torso", "Left Leg"},
+	{"Torso", "Right Leg"}
+}
+
+local R15Joints = {
+	{"Head", "UpperTorso"},
+	{"UpperTorso", "LowerTorso"},
+	{"UpperTorso", "LeftUpperArm"},
+	{"LeftUpperArm", "LeftLowerArm"},
+	{"LeftLowerArm", "LeftHand"},
+	{"UpperTorso", "RightUpperArm"},
+	{"RightUpperArm", "RightLowerArm"},
+	{"RightLowerArm", "RightHand"},
+	{"LowerTorso", "LeftUpperLeg"},
+	{"LeftUpperLeg", "LeftLowerLeg"},
+	{"LeftLowerLeg", "LeftFoot"},
+	{"LowerTorso", "RightUpperLeg"},
+	{"RightUpperLeg", "RightLowerLeg"},
+	{"RightLowerLeg", "RightFoot"}
+}
 
 local function newDrawing(type, props)
 	local d = Drawing.new(type)
@@ -51,6 +86,16 @@ local function createESP(player)
 		})
 	end
 
+	local skeletonLines = {}
+	for i = 1, 15 do
+		skeletonLines[i] = newDrawing("Line", {
+			Visible = false,
+			Color = espSettings.skeletonColor,
+			Thickness = 1,
+			ZIndex = 2
+		})
+	end
+
 	drawings[player] = {
 		boxOuter = newDrawing("Square", {
 			Visible = false,
@@ -80,13 +125,53 @@ local function createESP(player)
 			Filled = true,
 			ZIndex = 2
 		}),
-		gradientRects = gradientRects
+		gradientRects = gradientRects,
+		name = newDrawing("Text", {
+			Visible = false,
+			Color = espSettings.nameColor,
+			Size = 13,
+			Center = true,
+			Outline = true,
+			OutlineColor = Color3.fromRGB(0, 0, 0),
+			ZIndex = 4
+		}),
+		distance = newDrawing("Text", {
+			Visible = false,
+			Color = espSettings.distanceColor,
+			Size = 12,
+			Center = true,
+			Outline = true,
+			OutlineColor = Color3.fromRGB(0, 0, 0),
+			ZIndex = 4
+		}),
+		weapon = newDrawing("Text", {
+			Visible = false,
+			Color = espSettings.weaponColor,
+			Size = 12,
+			Center = true,
+			Outline = true,
+			OutlineColor = Color3.fromRGB(0, 0, 0),
+			ZIndex = 4
+		}),
+		healthText = newDrawing("Text", {
+			Visible = false,
+			Color = espSettings.healthTextColor,
+			Size = 12,
+			Center = true,
+			Outline = true,
+			OutlineColor = Color3.fromRGB(0, 0, 0),
+			ZIndex = 4
+		}),
+		skeletonLines = skeletonLines
 	}
 end
 
 local function removeESP(player)
 	if not drawings[player] then return end
 	for _, d in ipairs(drawings[player].gradientRects) do
+		pcall(function() d:Remove() end)
+	end
+	for _, d in ipairs(drawings[player].skeletonLines) do
 		pcall(function() d:Remove() end)
 	end
 	for _, d in pairs(drawings[player]) do
@@ -102,8 +187,15 @@ local function hideSet(set)
 	set.box.Visible = false
 	set.boxInner.Visible = false
 	set.healthBg.Visible = false
+	set.name.Visible = false
+	set.distance.Visible = false
+	set.weapon.Visible = false
+	set.healthText.Visible = false
 	for _, r in ipairs(set.gradientRects) do
 		r.Visible = false
+	end
+	for _, l in ipairs(set.skeletonLines) do
+		l.Visible = false
 	end
 end
 
@@ -191,6 +283,84 @@ local function updateESP()
 		else
 			set.healthBg.Visible = false
 			for _, r in ipairs(set.gradientRects) do r.Visible = false end
+		end
+
+		if espSettings.name then
+			set.name.Text = player.DisplayName or player.Name
+			set.name.Position = Vector2.new(x + width / 2, y - 16)
+			set.name.Color = espSettings.nameColor
+			set.name.Visible = true
+		else
+			set.name.Visible = false
+		end
+
+		local bottomOffset = y + height + 2
+
+		if espSettings.weapon then
+			local tool = character:FindFirstChildOfClass("Tool")
+			local toolName = tool and tool.Name or "None"
+			set.weapon.Text = toolName
+			set.weapon.Position = Vector2.new(x + width / 2, bottomOffset)
+			set.weapon.Color = espSettings.weaponColor
+			set.weapon.Visible = true
+			bottomOffset = bottomOffset + 14
+		else
+			set.weapon.Visible = false
+		end
+
+		if espSettings.distance then
+			local localChar = p.Character
+			local localRoot = localChar and localChar:FindFirstChild("HumanoidRootPart")
+			local dist = localRoot and math.floor((rootPart.Position - localRoot.Position).Magnitude) or 0
+			set.distance.Text = "[" .. dist .. "m]"
+			set.distance.Position = Vector2.new(x + width / 2, bottomOffset)
+			set.distance.Color = espSettings.distanceColor
+			set.distance.Visible = true
+		else
+			set.distance.Visible = false
+		end
+
+		if espSettings.healthText then
+			local hum = character:FindFirstChildOfClass("Humanoid")
+			local hp = hum and math.floor(hum.Health) or 0
+			set.healthText.Text = tostring(hp) .. "HP"
+			set.healthText.Position = Vector2.new(x - 24, y + height / 2 - 6)
+			set.healthText.Color = espSettings.healthTextColor
+			set.healthText.Visible = true
+		else
+			set.healthText.Visible = false
+		end
+
+		if espSettings.skeleton then
+			local hum = character:FindFirstChildOfClass("Humanoid")
+			local joints = (hum and hum.RigType == Enum.HumanoidRigType.R15) and R15Joints or R6Joints
+			for i, line in ipairs(set.skeletonLines) do
+				local pair = joints[i]
+				if pair then
+					local p1 = character:FindFirstChild(pair[1])
+					local p2 = character:FindFirstChild(pair[2])
+					if p1 and p2 then
+						local pos1, vis1 = cam:WorldToViewportPoint(p1.Position)
+						local pos2, vis2 = cam:WorldToViewportPoint(p2.Position)
+						if vis1 and vis2 then
+							line.From = Vector2.new(pos1.X, pos1.Y)
+							line.To = Vector2.new(pos2.X, pos2.Y)
+							line.Color = espSettings.skeletonColor
+							line.Visible = true
+						else
+							line.Visible = false
+						end
+					else
+						line.Visible = false
+					end
+				else
+					line.Visible = false
+				end
+			end
+		else
+			for _, line in ipairs(set.skeletonLines) do
+				line.Visible = false
+			end
 		end
 	end
 end
@@ -1307,6 +1477,61 @@ function ConcordeLib.new(config)
 		self:Toggle("Healthbar", espSettings.healthBar, col2, {
 			callback = function(val)
 				espSettings.healthBar = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Name ESP", espSettings.name, col2, {
+			color = espSettings.nameColor,
+			onColorChanged = function(c)
+				espSettings.nameColor = c
+			end,
+			callback = function(val)
+				espSettings.name = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Distance ESP", espSettings.distance, col2, {
+			color = espSettings.distanceColor,
+			onColorChanged = function(c)
+				espSettings.distanceColor = c
+			end,
+			callback = function(val)
+				espSettings.distance = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Weapon ESP", espSettings.weapon, col2, {
+			color = espSettings.weaponColor,
+			onColorChanged = function(c)
+				espSettings.weaponColor = c
+			end,
+			callback = function(val)
+				espSettings.weapon = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Health Text", espSettings.healthText, col2, {
+			color = espSettings.healthTextColor,
+			onColorChanged = function(c)
+				espSettings.healthTextColor = c
+			end,
+			callback = function(val)
+				espSettings.healthText = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Skeleton ESP", espSettings.skeleton, col2, {
+			color = espSettings.skeletonColor,
+			onColorChanged = function(c)
+				espSettings.skeletonColor = c
+			end,
+			callback = function(val)
+				espSettings.skeleton = val
 				updatePreview()
 			end
 		})
