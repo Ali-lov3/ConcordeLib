@@ -1,4 +1,4 @@
-Local ConcordeLib = {}
+local ConcordeLib = {}
 ConcordeLib.__index = ConcordeLib
 
 local cg = game:GetService("CoreGui")
@@ -226,19 +226,14 @@ local function updateESP()
 		local rootPos, onScreen = cam:WorldToViewportPoint(rootPart.Position)
 		if not onScreen then hideSet(set) continue end
 
-		local hum = character:FindFirstChildOfClass("Humanoid")
 		local headPart = character:FindFirstChild("Head") or rootPart
+		local headPos = cam:WorldToViewportPoint(headPart.Position)
+		local feetPos = cam:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 3, 0))
 
-		local headYOffset = (headPart:IsA("BasePart") and (headPart.Size.Y / 2) or 0.5) + 0.2
-		local hipYOffset = (hum and hum.HipHeight > 0) and ((rootPart.Size.Y / 2) + hum.HipHeight + 0.1) or 3.2
-
-		local topPos = cam:WorldToViewportPoint(headPart.Position + Vector3.new(0, headYOffset, 0))
-		local feetPos = cam:WorldToViewportPoint(rootPart.Position - Vector3.new(0, hipYOffset, 0))
-
-		local height = math.abs(topPos.Y - feetPos.Y)
-		local width = height * 0.5
+		local height = math.abs(headPos.Y - feetPos.Y)
+		local width = height * 0.45
 		local x = rootPos.X - width / 2
-		local y = topPos.Y
+		local y = headPos.Y
 		local O = 1
 
 		if espSettings.box then
@@ -261,6 +256,7 @@ local function updateESP()
 		end
 
 		if espSettings.healthBar then
+			local hum = character:FindFirstChildOfClass("Humanoid")
 			local hp = hum and hum.Health or 0
 			local maxHp = hum and hum.MaxHealth or 100
 			local ratio = math.clamp(hp / maxHp, 0, 1)
@@ -334,6 +330,7 @@ local function updateESP()
 		end
 
 		if espSettings.healthText then
+			local hum = character:FindFirstChildOfClass("Humanoid")
 			local hp = hum and math.floor(hum.Health) or 0
 			set.healthText.Text = tostring(hp) .. "HP"
 			set.healthText.Position = Vector2.new(x - 24, y + height / 2 - 6)
@@ -353,6 +350,7 @@ local function updateESP()
 		end
 
 		if espSettings.skeleton then
+			local hum = character:FindFirstChildOfClass("Humanoid")
 			local joints = (hum and hum.RigType == Enum.HumanoidRigType.R15) and R15Joints or R6Joints
 			for i, line in ipairs(set.skeletonLines) do
 				local pair = joints[i]
