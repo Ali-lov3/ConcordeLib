@@ -1,4 +1,4 @@
-local ConcordeLib = {}
+Local ConcordeLib = {}
 ConcordeLib.__index = ConcordeLib
 
 local cg = game:GetService("CoreGui")
@@ -54,13 +54,6 @@ local R15Joints = {
 	{"RightLowerLeg", "RightFoot"}
 }
 
-local validParts = {
-	Head = true, Torso = true, ["Left Arm"] = true, ["Right Arm"] = true, ["Left Leg"] = true, ["Right Leg"] = true,
-	UpperTorso = true, LowerTorso = true, LeftUpperArm = true, LeftLowerArm = true, LeftHand = true,
-	RightUpperArm = true, RightLowerArm = true, RightHand = true, LeftUpperLeg = true, LeftLowerLeg = true,
-	LeftFoot = true, RightUpperLeg = true, RightLowerLeg = true, RightFoot = true, HumanoidRootPart = true
-}
-
 local function newDrawing(type, props)
 	local d = Drawing.new(type)
 	for k, v in pairs(props) do
@@ -77,38 +70,6 @@ local function getGradientColor(ratio)
 		local t = ratio / 0.5
 		return Color3.fromRGB(255, math.floor(255 * t), 0)
 	end
-end
-
-local function getCharBounds(character, cam)
-	local minX, minY = math.huge, math.huge
-	local maxX, maxY = -math.huge, -math.huge
-	local vis = false
-
-	for _, part in ipairs(character:GetChildren()) do
-		if part:IsA("BasePart") and validParts[part.Name] then
-			local size = part.Size / 2
-			local cf = part.CFrame
-			local corners = {
-				cf * Vector3.new(size.X, size.Y, size.Z),
-				cf * Vector3.new(size.X, size.Y, -size.Z),
-				cf * Vector3.new(size.X, -size.Y, size.Z),
-				cf * Vector3.new(size.X, -size.Y, -size.Z),
-				cf * Vector3.new(-size.X, size.Y, size.Z),
-				cf * Vector3.new(-size.X, size.Y, -size.Z),
-				cf * Vector3.new(-size.X, -size.Y, size.Z),
-				cf * Vector3.new(-size.X, -size.Y, -size.Z)
-			}
-			for _, c in ipairs(corners) do
-				local p, v = cam:WorldToViewportPoint(c)
-				if v then vis = true end
-				if p.X < minX then minX = p.X end
-				if p.X > maxX then maxX = p.X end
-				if p.Y < minY then minY = p.Y end
-				if p.Y > maxY then maxY = p.Y end
-			end
-		end
-	end
-	return minX, minY, maxX, maxY, vis
 end
 
 local drawings = {}
@@ -262,15 +223,22 @@ local function updateESP()
 
 		if not rootPart then hideSet(set) continue end
 
-		local rootPos, rootVis = cam:WorldToViewportPoint(rootPart.Position)
-		local minX, minY, maxX, maxY, isVis = getCharBounds(character, cam)
+		local rootPos, onScreen = cam:WorldToViewportPoint(rootPart.Position)
+		if not onScreen then hideSet(set) continue end
 
-		if not isVis then hideSet(set) continue end
+		local hum = character:FindFirstChildOfClass("Humanoid")
+		local headPart = character:FindFirstChild("Head") or rootPart
 
-		local width = maxX - minX
-		local height = maxY - minY
-		local x = minX
-		local y = minY
+		local headYOffset = (headPart:IsA("BasePart") and (headPart.Size.Y / 2) or 0.5) + 0.2
+		local hipYOffset = (hum and hum.HipHeight > 0) and ((rootPart.Size.Y / 2) + hum.HipHeight + 0.1) or 3.2
+
+		local topPos = cam:WorldToViewportPoint(headPart.Position + Vector3.new(0, headYOffset, 0))
+		local feetPos = cam:WorldToViewportPoint(rootPart.Position - Vector3.new(0, hipYOffset, 0))
+
+		local height = math.abs(topPos.Y - feetPos.Y)
+		local width = height * 0.5
+		local x = rootPos.X - width / 2
+		local y = topPos.Y
 		local O = 1
 
 		if espSettings.box then
@@ -293,13 +261,12 @@ local function updateESP()
 		end
 
 		if espSettings.healthBar then
-			local hum = character:FindFirstChildOfClass("Humanoid")
 			local hp = hum and hum.Health or 0
 			local maxHp = hum and hum.MaxHealth or 100
 			local ratio = math.clamp(hp / maxHp, 0, 1)
 
 			local barWidth = math.clamp(height * 0.04, 1, 3)
-			local barX = x - barWidth - 3
+			local barX = x - barWidth - 2
 			local barFullHeight = height
 			local barHeight = math.max(barFullHeight * ratio, 0)
 			local barTop = y + (barFullHeight - barHeight)
@@ -367,7 +334,6 @@ local function updateESP()
 		end
 
 		if espSettings.healthText then
-			local hum = character:FindFirstChildOfClass("Humanoid")
 			local hp = hum and math.floor(hum.Health) or 0
 			set.healthText.Text = tostring(hp) .. "HP"
 			set.healthText.Position = Vector2.new(x - 24, y + height / 2 - 6)
@@ -387,7 +353,6 @@ local function updateESP()
 		end
 
 		if espSettings.skeleton then
-			local hum = character:FindFirstChildOfClass("Humanoid")
 			local joints = (hum and hum.RigType == Enum.HumanoidRigType.R15) and R15Joints or R6Joints
 			for i, line in ipairs(set.skeletonLines) do
 				local pair = joints[i]
@@ -1442,8 +1407,31 @@ function ConcordeLib.new(config)
 		cam.Parent = vp
 
 		local wm = Instance.new("WorldModel", vp)
-		
+
+		task.spawn(function()
+			local char = p.Character or p.CharacterAdded:Wait()
+			char.Archivable = true
+			local clone = char:Clone()
+			char.Archivable = false
+			clone.Parent = wm
+
+			local root = clone:FindFirstChild("HumanoidRootPart") or clone:FindFirstChild("Torso") or clone:FindFirstChild("UpperTorso")
+			if root then
+				local angle = 0
+				rs.RenderStepped:Connect(function(dt)
+					if clone and clone.Parent and root then
+						angle = (angle + dt * 40) % 360
+						local rad = math.rad(angle)
+						local camPos = root.Position + Vector3.new(math.sin(rad) * 6, 1, math.cos(rad) * 6)
+						cam.CFrame = CFrame.new(camPos, root.Position)
+					end
+				end)
+			end
+		end)
+
 		local previewBoxOuter = Instance.new("Frame", vpContainer)
+		previewBoxOuter.Size = UDim2.new(0, 60, 0, 105)
+		previewBoxOuter.Position = UDim2.new(0.5, -30, 0.5, -52)
 		previewBoxOuter.BackgroundTransparency = 1
 		previewBoxOuter.Visible = false
 
@@ -1478,9 +1466,9 @@ function ConcordeLib.new(config)
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
 		})
 
-		local previewName = Instance.new("TextLabel", previewBoxOuter)
+		local previewName = Instance.new("TextLabel", vpContainer)
 		previewName.Size = UDim2.new(1, 0, 0, 14)
-		previewName.Position = UDim2.new(0, 0, 0, -16)
+		previewName.Position = UDim2.new(0, 0, 0.5, -70)
 		previewName.BackgroundTransparency = 1
 		previewName.Text = "Player"
 		previewName.TextColor3 = espSettings.nameColor
@@ -1489,9 +1477,9 @@ function ConcordeLib.new(config)
 		previewName.TextStrokeTransparency = 0
 		previewName.Visible = false
 
-		local previewWeapon = Instance.new("TextLabel", previewBoxOuter)
+		local previewWeapon = Instance.new("TextLabel", vpContainer)
 		previewWeapon.Size = UDim2.new(1, 0, 0, 14)
-		previewWeapon.Position = UDim2.new(0, 0, 1, 2)
+		previewWeapon.Position = UDim2.new(0, 0, 0.5, 56)
 		previewWeapon.BackgroundTransparency = 1
 		previewWeapon.Text = "Tool"
 		previewWeapon.TextColor3 = espSettings.weaponColor
@@ -1500,9 +1488,9 @@ function ConcordeLib.new(config)
 		previewWeapon.TextStrokeTransparency = 0
 		previewWeapon.Visible = false
 
-		local previewDistance = Instance.new("TextLabel", previewBoxOuter)
+		local previewDistance = Instance.new("TextLabel", vpContainer)
 		previewDistance.Size = UDim2.new(1, 0, 0, 14)
-		previewDistance.Position = UDim2.new(0, 0, 1, 16)
+		previewDistance.Position = UDim2.new(0, 0, 0.5, 70)
 		previewDistance.BackgroundTransparency = 1
 		previewDistance.Text = "[50m]"
 		previewDistance.TextColor3 = espSettings.distanceColor
@@ -1511,9 +1499,9 @@ function ConcordeLib.new(config)
 		previewDistance.TextStrokeTransparency = 0
 		previewDistance.Visible = false
 
-		local previewHealthText = Instance.new("TextLabel", previewBoxOuter)
+		local previewHealthText = Instance.new("TextLabel", vpContainer)
 		previewHealthText.Size = UDim2.new(0, 30, 0, 14)
-		previewHealthText.Position = UDim2.new(0, -36, 0.5, -7)
+		previewHealthText.Position = UDim2.new(0.5, -68, 0.5, -7)
 		previewHealthText.BackgroundTransparency = 1
 		previewHealthText.Text = "100HP"
 		previewHealthText.TextColor3 = espSettings.healthTextColor
@@ -1528,35 +1516,6 @@ function ConcordeLib.new(config)
 		previewTracer.BackgroundColor3 = espSettings.tracerColor
 		previewTracer.BorderSizePixel = 0
 		previewTracer.Visible = false
-
-		task.spawn(function()
-			local char = p.Character or p.CharacterAdded:Wait()
-			char.Archivable = true
-			local clone = char:Clone()
-			char.Archivable = false
-			clone.Parent = wm
-
-			local root = clone:FindFirstChild("HumanoidRootPart") or clone:FindFirstChild("Torso") or clone:FindFirstChild("UpperTorso")
-			if root then
-				local angle = 0
-				rs.RenderStepped:Connect(function(dt)
-					if clone and clone.Parent and root then
-						angle = (angle + dt * 40) % 360
-						local rad = math.rad(angle)
-						local camPos = root.Position + Vector3.new(math.sin(rad) * 6, 1, math.cos(rad) * 6)
-						cam.CFrame = CFrame.new(camPos, root.Position)
-
-						local minX, minY, maxX, maxY, vis = getCharBounds(clone, cam)
-						if vis then
-							local w = maxX - minX
-							local h = maxY - minY
-							previewBoxOuter.Size = UDim2.new(0, w, 0, h)
-							previewBoxOuter.Position = UDim2.new(0, minX, 0, minY)
-						end
-					end
-				end)
-			end
-		end)
 
 		local function updatePreview()
 			local active = espSettings.enabled
