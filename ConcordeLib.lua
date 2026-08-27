@@ -5,6 +5,7 @@ local cg = game:GetService("CoreGui")
 local p = game:GetService("Players").LocalPlayer
 local uis = game:GetService("UserInputService")
 local ts = game:GetService("TweenService")
+local rs = game:GetService("RunService")
 
 local Lucide
 pcall(function()
@@ -995,6 +996,56 @@ function ConcordeLib.new(config)
 			end
 		end)
 		return b
+	end
+
+	function self:EspApply(col1, col2)
+		self:Title("Preview", col1)
+
+		local vpContainer = Instance.new("Frame", col1)
+		vpContainer.Size = UDim2.new(1, 0, 0, 160)
+		vpContainer.BackgroundColor3 = Color3.fromRGB(16, 17, 23)
+		vpContainer.BorderSizePixel = 0
+		Instance.new("UICorner", vpContainer).CornerRadius = UDim.new(0, 6)
+		local vps = Instance.new("UIStroke", vpContainer)
+		vps.Color = Color3.fromRGB(26, 28, 38)
+		vps.Thickness = 1
+
+		local vp = Instance.new("ViewportFrame", vpContainer)
+		vp.Size = UDim2.new(1, 0, 1, 0)
+		vp.BackgroundTransparency = 1
+
+		local cam = Instance.new("Camera")
+		vp.CurrentCamera = cam
+		cam.Parent = vp
+
+		local wm = Instance.new("WorldModel", vp)
+
+		task.spawn(function()
+			local char = p.Character or p.CharacterAdded:Wait()
+			char.Archivable = true
+			local clone = char:Clone()
+			char.Archivable = false
+			clone.Parent = wm
+
+			local root = clone:FindFirstChild("HumanoidRootPart") or clone:FindFirstChild("Torso") or clone:FindFirstChild("UpperTorso")
+			if root then
+				local angle = 0
+				rs.RenderStepped:Connect(function(dt)
+					if clone and clone.Parent and root then
+						angle = (angle + dt * 40) % 360
+						local rad = math.rad(angle)
+						local camPos = root.Position + Vector3.new(math.sin(rad) * 6, 1, math.cos(rad) * 6)
+						cam.CFrame = CFrame.new(camPos, root.Position)
+					end
+				end)
+			end
+		end)
+
+		self:Title("ESP Elements", col2)
+		self:Toggle("Box ESP", false, col2, { color = Color3.fromRGB(240, 45, 70) })
+		self:Toggle("Name ESP", false, col2, { color = Color3.fromRGB(255, 255, 255) })
+		self:Toggle("Tracers", false, col2, { color = Color3.fromRGB(0, 255, 120) })
+		self:Toggle("Distance ESP", false, col2)
 	end
 
 	function self:ThemeSettingsApply(col1, col2)
