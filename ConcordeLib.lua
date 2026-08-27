@@ -6,6 +6,201 @@ local p = game:GetService("Players").LocalPlayer
 local uis = game:GetService("UserInputService")
 local ts = game:GetService("TweenService")
 local rs = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local espSettings = {
+	enabled = false,
+	box = false,
+	boxColor = Color3.fromRGB(240, 45, 70),
+	healthBar = false
+}
+
+local GRADIENT_STEPS = 32
+
+local function newDrawing(type, props)
+	local d = Drawing.new(type)
+	for k, v in pairs(props) do
+		d[k] = v
+	end
+	return d
+end
+
+local function getGradientColor(ratio)
+	if ratio > 0.5 then
+		local t = (ratio - 0.5) / 0.5
+		return Color3.fromRGB(math.floor(255 * (1 - t)), 255, 0)
+	else
+		local t = ratio / 0.5
+		return Color3.fromRGB(255, math.floor(255 * t), 0)
+	end
+end
+
+local drawings = {}
+
+local function createESP(player)
+	if player == p then return end
+
+	local gradientRects = {}
+	for i = 1, GRADIENT_STEPS do
+		gradientRects[i] = newDrawing("Square", {
+			Visible = false,
+			Color = Color3.fromRGB(0, 255, 0),
+			Thickness = 1,
+			Filled = true,
+			ZIndex = 3
+		})
+	end
+
+	drawings[player] = {
+		boxOuter = newDrawing("Square", {
+			Visible = false,
+			Color = Color3.fromRGB(0, 0, 0),
+			Thickness = 1,
+			Filled = false,
+			ZIndex = 1
+		}),
+		box = newDrawing("Square", {
+			Visible = false,
+			Color = espSettings.boxColor,
+			Thickness = 1,
+			Filled = false,
+			ZIndex = 2
+		}),
+		boxInner = newDrawing("Square", {
+			Visible = false,
+			Color = Color3.fromRGB(0, 0, 0),
+			Thickness = 1,
+			Filled = false,
+			ZIndex = 3
+		}),
+		healthBg = newDrawing("Square", {
+			Visible = false,
+			Color = Color3.fromRGB(0, 0, 0),
+			Thickness = 1,
+			Filled = true,
+			ZIndex = 2
+		}),
+		gradientRects = gradientRects
+	}
+end
+
+local function removeESP(player)
+	if not drawings[player] then return end
+	for _, d in ipairs(drawings[player].gradientRects) do
+		pcall(function() d:Remove() end)
+	end
+	for _, d in pairs(drawings[player]) do
+		if type(d) ~= "table" then
+			pcall(function() d:Remove() end)
+		end
+	end
+	drawings[player] = nil
+end
+
+local function hideSet(set)
+	set.boxOuter.Visible = false
+	set.box.Visible = false
+	set.boxInner.Visible = false
+	set.healthBg.Visible = false
+	for _, r in ipairs(set.gradientRects) do
+		r.Visible = false
+	end
+end
+
+local function updateESP()
+	if not espSettings.enabled then
+		for _, set in pairs(drawings) do
+			hideSet(set)
+		end
+		return
+	end
+
+	local cam = workspace.CurrentCamera
+	for player, set in pairs(drawings) do
+		local character = player.Character
+		local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+
+		if not rootPart then hideSet(set) continue end
+
+		local rootPos, onScreen = cam:WorldToViewportPoint(rootPart.Position)
+		if not onScreen then hideSet(set) continue end
+
+		local headPart = character:FindFirstChild("Head") or rootPart
+		local headPos = cam:WorldToViewportPoint(headPart.Position)
+		local feetPos = cam:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 3, 0))
+
+		local height = math.abs(headPos.Y - feetPos.Y)
+		local width = height * 0.45
+		local x = rootPos.X - width / 2
+		local y = headPos.Y
+		local O = 1
+
+		if espSettings.box then
+			set.boxOuter.Position = Vector2.new(x - O, y - O)
+			set.boxOuter.Size = Vector2.new(width + O * 2, height + O * 2)
+			set.boxOuter.Visible = true
+
+			set.box.Position = Vector2.new(x, y)
+			set.box.Size = Vector2.new(width, height)
+			set.box.Color = espSettings.boxColor
+			set.box.Visible = true
+
+			set.boxInner.Position = Vector2.new(x + O, y + O)
+			set.boxInner.Size = Vector2.new(width - O * 2, height - O * 2)
+			set.boxInner.Visible = true
+		else
+			set.boxOuter.Visible = false
+			set.box.Visible = false
+			set.boxInner.Visible = false
+		end
+
+		if espSettings.healthBar then
+			local hum = character:FindFirstChildOfClass("Humanoid")
+			local hp = hum and hum.Health or 0
+			local maxHp = hum and hum.MaxHealth or 100
+			local ratio = math.clamp(hp / maxHp, 0, 1)
+
+			local barWidth = math.clamp(height * 0.04, 1, 3)
+			local barX = x - barWidth - 2
+			local barFullHeight = height
+			local barHeight = math.max(barFullHeight * ratio, 0)
+			local barTop = y + (barFullHeight - barHeight)
+
+			set.healthBg.Position = Vector2.new(barX, y)
+			set.healthBg.Size = Vector2.new(barWidth, barFullHeight)
+			set.healthBg.Visible = true
+
+			local rects = set.gradientRects
+			local count = #rects
+
+			if barHeight <= 0 then
+				for _, r in ipairs(rects) do r.Visible = false end
+			else
+				local segHeight = barHeight / count
+				for i = 1, count do
+					local segRatio = (i - 1) / math.max(count - 1, 1)
+					local segY = barTop + barHeight - i * segHeight
+					local rectHeight = math.ceil(segHeight + 0.5)
+
+					rects[i].Position = Vector2.new(barX, segY)
+					rects[i].Size = Vector2.new(barWidth, rectHeight)
+					rects[i].Color = getGradientColor(segRatio)
+					rects[i].Visible = true
+				end
+			end
+		else
+			set.healthBg.Visible = false
+			for _, r in ipairs(set.gradientRects) do r.Visible = false end
+		end
+	end
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+	createESP(player)
+end
+Players.PlayerAdded:Connect(createESP)
+Players.PlayerRemoving:Connect(removeESP)
+rs.RenderStepped:Connect(updateESP)
 
 local Lucide
 pcall(function()
@@ -357,7 +552,7 @@ function ConcordeLib.new(config)
 	av.BackgroundColor3 = Color3.fromRGB(22, 23, 30)
 	Instance.new("UICorner", av).CornerRadius = UDim.new(1, 0)
 	pcall(function()
-		av.Image = game:GetService("Players"):GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+		av.Image = Players:GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
 	end)
 
 	local mc = Instance.new("Frame", mf)
@@ -678,6 +873,9 @@ function ConcordeLib.new(config)
 			btn.BackgroundColor3 = on and ACCENT or Color3.fromRGB(35, 36, 46)
 			ind:TweenPosition(on and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9), "Out", "Sine", 0.12, true)
 			notify(text .. ": " .. tostring(on))
+			if extraConfig and extraConfig.callback then
+				extraConfig.callback(on)
+			end
 		end)
 
 		return function() return on end
@@ -1041,11 +1239,79 @@ function ConcordeLib.new(config)
 			end
 		end)
 
+		local previewBoxOuter = Instance.new("Frame", vpContainer)
+		previewBoxOuter.Size = UDim2.new(0, 60, 0, 105)
+		previewBoxOuter.Position = UDim2.new(0.5, -30, 0.5, -52)
+		previewBoxOuter.BackgroundTransparency = 1
+		previewBoxOuter.Visible = false
+
+		local pOuterStroke = Instance.new("UIStroke", previewBoxOuter)
+		pOuterStroke.Color = Color3.fromRGB(0, 0, 0)
+		pOuterStroke.Thickness = 2.5
+
+		local previewBox = Instance.new("Frame", previewBoxOuter)
+		previewBox.Size = UDim2.new(1, 0, 1, 0)
+		previewBox.BackgroundTransparency = 1
+		local pBoxStroke = Instance.new("UIStroke", previewBox)
+		pBoxStroke.Thickness = 1
+		pBoxStroke.Color = espSettings.boxColor
+
+		local previewHealthBg = Instance.new("Frame", previewBoxOuter)
+		previewHealthBg.Size = UDim2.new(0, 3, 1, 0)
+		previewHealthBg.Position = UDim2.new(0, -6, 0, 0)
+		previewHealthBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		previewHealthBg.BorderSizePixel = 0
+		previewHealthBg.Visible = false
+
+		local previewHealthFill = Instance.new("Frame", previewHealthBg)
+		previewHealthFill.Size = UDim2.new(1, 0, 1, 0)
+		previewHealthFill.Position = UDim2.new(0, 0, 0, 0)
+		previewHealthFill.BorderSizePixel = 0
+
+		local pGrad = Instance.new("UIGradient", previewHealthFill)
+		pGrad.Rotation = 90
+		pGrad.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 0)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 0)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+		})
+
+		local function updatePreview()
+			local active = espSettings.enabled
+			previewBoxOuter.Visible = active and espSettings.box
+			pBoxStroke.Color = espSettings.boxColor
+			previewHealthBg.Visible = active and espSettings.healthBar
+		end
+
 		self:Title("ESP Elements", col2)
-		self:Toggle("Box ESP", false, col2, { color = Color3.fromRGB(240, 45, 70) })
-		self:Toggle("Name ESP", false, col2, { color = Color3.fromRGB(255, 255, 255) })
-		self:Toggle("Tracers", false, col2, { color = Color3.fromRGB(0, 255, 120) })
-		self:Toggle("Distance ESP", false, col2)
+
+		self:Toggle("Enable ESP", espSettings.enabled, col2, {
+			callback = function(val)
+				espSettings.enabled = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Box ESP", espSettings.box, col2, {
+			color = espSettings.boxColor,
+			onColorChanged = function(c)
+				espSettings.boxColor = c
+				updatePreview()
+			end,
+			callback = function(val)
+				espSettings.box = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Healthbar", espSettings.healthBar, col2, {
+			callback = function(val)
+				espSettings.healthBar = val
+				updatePreview()
+			end
+		})
+
+		updatePreview()
 	end
 
 	function self:ThemeSettingsApply(col1, col2)
