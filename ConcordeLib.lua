@@ -11,7 +11,7 @@ local Players = game:GetService("Players")
 local espSettings = {
 	enabled = false,
 	box = false,
-	boxColor = Color3.fromRGB(240, 45, 70),
+	boxColor = Color3.fromRGB(255, 255, 255),
 	healthBar = false,
 	name = false,
 	nameColor = Color3.fromRGB(255, 255, 255),
@@ -22,7 +22,9 @@ local espSettings = {
 	healthText = false,
 	healthTextColor = Color3.fromRGB(255, 255, 255),
 	skeleton = false,
-	skeletonColor = Color3.fromRGB(255, 255, 255)
+	skeletonColor = Color3.fromRGB(255, 255, 255),
+	tracer = false,
+	tracerColor = Color3.fromRGB(255, 255, 255)
 }
 
 local GRADIENT_STEPS = 32
@@ -162,7 +164,13 @@ local function createESP(player)
 			OutlineColor = Color3.fromRGB(0, 0, 0),
 			ZIndex = 4
 		}),
-		skeletonLines = skeletonLines
+		skeletonLines = skeletonLines,
+		tracer = newDrawing("Line", {
+			Visible = false,
+			Color = espSettings.tracerColor,
+			Thickness = 1,
+			ZIndex = 2
+		})
 	}
 end
 
@@ -191,6 +199,7 @@ local function hideSet(set)
 	set.distance.Visible = false
 	set.weapon.Visible = false
 	set.healthText.Visible = false
+	set.tracer.Visible = false
 	for _, r in ipairs(set.gradientRects) do
 		r.Visible = false
 	end
@@ -329,6 +338,15 @@ local function updateESP()
 			set.healthText.Visible = true
 		else
 			set.healthText.Visible = false
+		end
+
+		if espSettings.tracer then
+			set.tracer.From = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y)
+			set.tracer.To = Vector2.new(rootPos.X, rootPos.Y)
+			set.tracer.Color = espSettings.tracerColor
+			set.tracer.Visible = true
+		else
+			set.tracer.Visible = false
 		end
 
 		if espSettings.skeleton then
@@ -1446,11 +1464,77 @@ function ConcordeLib.new(config)
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
 		})
 
+		local previewName = Instance.new("TextLabel", vpContainer)
+		previewName.Size = UDim2.new(1, 0, 0, 14)
+		previewName.Position = UDim2.new(0, 0, 0.5, -70)
+		previewName.BackgroundTransparency = 1
+		previewName.Text = "Player"
+		previewName.TextColor3 = espSettings.nameColor
+		previewName.Font = Enum.Font.Ubuntu
+		previewName.TextSize = 12
+		previewName.TextStrokeTransparency = 0
+		previewName.Visible = false
+
+		local previewWeapon = Instance.new("TextLabel", vpContainer)
+		previewWeapon.Size = UDim2.new(1, 0, 0, 14)
+		previewWeapon.Position = UDim2.new(0, 0, 0.5, 56)
+		previewWeapon.BackgroundTransparency = 1
+		previewWeapon.Text = "Tool"
+		previewWeapon.TextColor3 = espSettings.weaponColor
+		previewWeapon.Font = Enum.Font.Ubuntu
+		previewWeapon.TextSize = 11
+		previewWeapon.TextStrokeTransparency = 0
+		previewWeapon.Visible = false
+
+		local previewDistance = Instance.new("TextLabel", vpContainer)
+		previewDistance.Size = UDim2.new(1, 0, 0, 14)
+		previewDistance.Position = UDim2.new(0, 0, 0.5, 70)
+		previewDistance.BackgroundTransparency = 1
+		previewDistance.Text = "[50m]"
+		previewDistance.TextColor3 = espSettings.distanceColor
+		previewDistance.Font = Enum.Font.Ubuntu
+		previewDistance.TextSize = 11
+		previewDistance.TextStrokeTransparency = 0
+		previewDistance.Visible = false
+
+		local previewHealthText = Instance.new("TextLabel", vpContainer)
+		previewHealthText.Size = UDim2.new(0, 30, 0, 14)
+		previewHealthText.Position = UDim2.new(0.5, -68, 0.5, -7)
+		previewHealthText.BackgroundTransparency = 1
+		previewHealthText.Text = "100HP"
+		previewHealthText.TextColor3 = espSettings.healthTextColor
+		previewHealthText.Font = Enum.Font.Ubuntu
+		previewHealthText.TextSize = 11
+		previewHealthText.TextStrokeTransparency = 0
+		previewHealthText.Visible = false
+
+		local previewTracer = Instance.new("Frame", vpContainer)
+		previewTracer.Size = UDim2.new(0, 1, 0, 25)
+		previewTracer.Position = UDim2.new(0.5, 0, 1, -25)
+		previewTracer.BackgroundColor3 = espSettings.tracerColor
+		previewTracer.BorderSizePixel = 0
+		previewTracer.Visible = false
+
 		local function updatePreview()
 			local active = espSettings.enabled
 			previewBoxOuter.Visible = active and espSettings.box
 			pBoxStroke.Color = espSettings.boxColor
 			previewHealthBg.Visible = active and espSettings.healthBar
+
+			previewName.Visible = active and espSettings.name
+			previewName.TextColor3 = espSettings.nameColor
+
+			previewWeapon.Visible = active and espSettings.weapon
+			previewWeapon.TextColor3 = espSettings.weaponColor
+
+			previewDistance.Visible = active and espSettings.distance
+			previewDistance.TextColor3 = espSettings.distanceColor
+
+			previewHealthText.Visible = active and espSettings.healthText
+			previewHealthText.TextColor3 = espSettings.healthTextColor
+
+			previewTracer.Visible = active and espSettings.tracer
+			previewTracer.BackgroundColor3 = espSettings.tracerColor
 		end
 
 		self:Title("ESP Elements", col2)
@@ -1485,6 +1569,7 @@ function ConcordeLib.new(config)
 			color = espSettings.nameColor,
 			onColorChanged = function(c)
 				espSettings.nameColor = c
+				updatePreview()
 			end,
 			callback = function(val)
 				espSettings.name = val
@@ -1496,6 +1581,7 @@ function ConcordeLib.new(config)
 			color = espSettings.distanceColor,
 			onColorChanged = function(c)
 				espSettings.distanceColor = c
+				updatePreview()
 			end,
 			callback = function(val)
 				espSettings.distance = val
@@ -1507,6 +1593,7 @@ function ConcordeLib.new(config)
 			color = espSettings.weaponColor,
 			onColorChanged = function(c)
 				espSettings.weaponColor = c
+				updatePreview()
 			end,
 			callback = function(val)
 				espSettings.weapon = val
@@ -1518,9 +1605,22 @@ function ConcordeLib.new(config)
 			color = espSettings.healthTextColor,
 			onColorChanged = function(c)
 				espSettings.healthTextColor = c
+				updatePreview()
 			end,
 			callback = function(val)
 				espSettings.healthText = val
+				updatePreview()
+			end
+		})
+
+		self:Toggle("Tracer ESP", espSettings.tracer, col2, {
+			color = espSettings.tracerColor,
+			onColorChanged = function(c)
+				espSettings.tracerColor = c
+				updatePreview()
+			end,
+			callback = function(val)
+				espSettings.tracer = val
 				updatePreview()
 			end
 		})
@@ -1529,6 +1629,7 @@ function ConcordeLib.new(config)
 			color = espSettings.skeletonColor,
 			onColorChanged = function(c)
 				espSettings.skeletonColor = c
+				updatePreview()
 			end,
 			callback = function(val)
 				espSettings.skeleton = val
