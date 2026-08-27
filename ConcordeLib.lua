@@ -1,4 +1,4 @@
-local ConcordeLib = {}
+Local ConcordeLib = {}
 ConcordeLib.__index = ConcordeLib
 
 local cg = game:GetService("CoreGui")
@@ -223,23 +223,44 @@ local function updateESP()
 
 		if not rootPart then hideSet(set) continue end
 
-		local rootPos, onScreen = cam:WorldToViewportPoint(rootPart.Position)
-		if not onScreen then hideSet(set) continue end
-
 		local hum = character:FindFirstChildOfClass("Humanoid")
-		local headPart = character:FindFirstChild("Head") or rootPart
+		if not hum or hum.Health <= 0 then hideSet(set) continue end
 
-		local headYOffset = (headPart:IsA("BasePart") and (headPart.Size.Y / 2) or 0.5) + 0.2
-		local hipYOffset = (hum and hum.HipHeight > 0) and ((rootPart.Size.Y / 2) + hum.HipHeight + 0.1) or 3.2
+		local cframe, size = character:GetBoundingBox()
+		local sx, sy, sz = size.X / 2, size.Y / 2, size.Z / 2
+		local corners = {
+			cframe * Vector3.new(-sx, -sy, -sz),
+			cframe * Vector3.new(-sx, -sy, sz),
+			cframe * Vector3.new(-sx, sy, -sz),
+			cframe * Vector3.new(-sx, sy, sz),
+			cframe * Vector3.new(sx, -sy, -sz),
+			cframe * Vector3.new(sx, -sy, sz),
+			cframe * Vector3.new(sx, sy, -sz),
+			cframe * Vector3.new(sx, sy, sz)
+		}
 
-		local topPos = cam:WorldToViewportPoint(headPart.Position + Vector3.new(0, headYOffset, 0))
-		local feetPos = cam:WorldToViewportPoint(rootPart.Position - Vector3.new(0, hipYOffset, 0))
+		local minX, minY = math.huge, math.huge
+		local maxX, maxY = -math.huge, -math.huge
+		local visibleCount = 0
 
-		local height = math.abs(topPos.Y - feetPos.Y)
-		local width = height * 0.5
-		local x = rootPos.X - width / 2
-		local y = topPos.Y
+		for i = 1, 8 do
+			local pos, onScreen = cam:WorldToViewportPoint(corners[i])
+			if onScreen then visibleCount = visibleCount + 1 end
+			if pos.X < minX then minX = pos.X end
+			if pos.X > maxX then maxX = pos.X end
+			if pos.Y < minY then minY = pos.Y end
+			if pos.Y > maxY then maxY = pos.Y end
+		end
+
+		if visibleCount == 0 then hideSet(set) continue end
+
+		local x = minX
+		local y = minY
+		local width = maxX - minX
+		local height = maxY - minY
 		local O = 1
+
+		local rootPos = cam:WorldToViewportPoint(rootPart.Position)
 
 		if espSettings.box then
 			set.boxOuter.Position = Vector2.new(x - O, y - O)
@@ -265,8 +286,8 @@ local function updateESP()
 			local maxHp = hum and hum.MaxHealth or 100
 			local ratio = math.clamp(hp / maxHp, 0, 1)
 
-			local barWidth = math.clamp(height * 0.04, 1, 3)
-			local barX = x - barWidth - 2
+			local barWidth = math.clamp(height * 0.04, 2, 4)
+			local barX = x - barWidth - 4
 			local barFullHeight = height
 			local barHeight = math.max(barFullHeight * ratio, 0)
 			local barTop = y + (barFullHeight - barHeight)
@@ -336,7 +357,7 @@ local function updateESP()
 		if espSettings.healthText then
 			local hp = hum and math.floor(hum.Health) or 0
 			set.healthText.Text = tostring(hp) .. "HP"
-			set.healthText.Position = Vector2.new(x - 24, y + height / 2 - 6)
+			set.healthText.Position = Vector2.new(x - 28, y + height / 2 - 6)
 			set.healthText.Color = espSettings.healthTextColor
 			set.healthText.Visible = true
 		else
@@ -1422,7 +1443,7 @@ function ConcordeLib.new(config)
 					if clone and clone.Parent and root then
 						angle = (angle + dt * 40) % 360
 						local rad = math.rad(angle)
-						local camPos = root.Position + Vector3.new(math.sin(rad) * 6, 1, math.cos(rad) * 6)
+						local camPos = root.Position + Vector3.new(math.sin(rad) * 6.5, 0.5, math.cos(rad) * 6.5)
 						cam.CFrame = CFrame.new(camPos, root.Position)
 					end
 				end)
@@ -1430,8 +1451,8 @@ function ConcordeLib.new(config)
 		end)
 
 		local previewBoxOuter = Instance.new("Frame", vpContainer)
-		previewBoxOuter.Size = UDim2.new(0, 60, 0, 105)
-		previewBoxOuter.Position = UDim2.new(0.5, -30, 0.5, -52)
+		previewBoxOuter.Size = UDim2.new(0, 72, 0, 118)
+		previewBoxOuter.Position = UDim2.new(0.5, -36, 0.5, -59)
 		previewBoxOuter.BackgroundTransparency = 1
 		previewBoxOuter.Visible = false
 
@@ -1468,7 +1489,7 @@ function ConcordeLib.new(config)
 
 		local previewName = Instance.new("TextLabel", vpContainer)
 		previewName.Size = UDim2.new(1, 0, 0, 14)
-		previewName.Position = UDim2.new(0, 0, 0.5, -70)
+		previewName.Position = UDim2.new(0, 0, 0.5, -78)
 		previewName.BackgroundTransparency = 1
 		previewName.Text = "Player"
 		previewName.TextColor3 = espSettings.nameColor
@@ -1479,7 +1500,7 @@ function ConcordeLib.new(config)
 
 		local previewWeapon = Instance.new("TextLabel", vpContainer)
 		previewWeapon.Size = UDim2.new(1, 0, 0, 14)
-		previewWeapon.Position = UDim2.new(0, 0, 0.5, 56)
+		previewWeapon.Position = UDim2.new(0, 0, 0.5, 62)
 		previewWeapon.BackgroundTransparency = 1
 		previewWeapon.Text = "Tool"
 		previewWeapon.TextColor3 = espSettings.weaponColor
@@ -1490,7 +1511,7 @@ function ConcordeLib.new(config)
 
 		local previewDistance = Instance.new("TextLabel", vpContainer)
 		previewDistance.Size = UDim2.new(1, 0, 0, 14)
-		previewDistance.Position = UDim2.new(0, 0, 0.5, 70)
+		previewDistance.Position = UDim2.new(0, 0, 0.5, 75)
 		previewDistance.BackgroundTransparency = 1
 		previewDistance.Text = "[50m]"
 		previewDistance.TextColor3 = espSettings.distanceColor
@@ -1501,7 +1522,7 @@ function ConcordeLib.new(config)
 
 		local previewHealthText = Instance.new("TextLabel", vpContainer)
 		previewHealthText.Size = UDim2.new(0, 30, 0, 14)
-		previewHealthText.Position = UDim2.new(0.5, -68, 0.5, -7)
+		previewHealthText.Position = UDim2.new(0.5, -76, 0.5, -7)
 		previewHealthText.BackgroundTransparency = 1
 		previewHealthText.Text = "100HP"
 		previewHealthText.TextColor3 = espSettings.healthTextColor
