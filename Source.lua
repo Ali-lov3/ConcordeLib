@@ -571,6 +571,14 @@ function Library:CreateWindow(Options)
 		}),
 	})
 
+	local function FitTitle()
+		local Width = Tools.AbsoluteSize.X / math.max(Scale.Scale, 0.01) + 28
+		Title.Size = UDim2.new(1, -Width, 0, 20)
+		Subtitle.Size = UDim2.new(1, -Width, 0, 18)
+	end
+	Tools:GetPropertyChangedSignal("AbsoluteSize"):Connect(FitTitle)
+	FitTitle()
+
 	local function ToolButton(Order, Names, Tint)
 		local Button = New("TextButton", {
 			LayoutOrder = Order,
@@ -620,6 +628,7 @@ function Library:CreateWindow(Options)
 			Scroller = Container.Scroller,
 			Page = Container.Page,
 			Mode = Container.Mode,
+			Reveal = Container.Reveal,
 			Path = Container.Mode .. " / " .. Container.Section,
 		})
 	end
@@ -2151,14 +2160,45 @@ function Library:CreateWindow(Options)
 		SaveMeta()
 	end
 
+	local SelectedIndex = 0
+
 	local function Select(Index)
 		ClosePopup()
+		SelectedIndex = Index
 		for I, Tab in ipairs(Tabs) do
 			Tab.Page.Visible = I == Index
+			if Tab.Bar then Tab.Bar.Visible = I == Index end
 			Tween(Tab.Button, { BackgroundTransparency = I == Index and 0 or 1 })
 			Tween(Tab.Glyph, { ImageColor3 = I == Index and Theme.White or Theme.IconDim })
 		end
 		if Tabs[Index] then Subtitle.Text = Tabs[Index].Name end
+	end
+
+	local function GetColumn(Page, Side)
+		local Set = Columns[Page]
+		if not Set then
+			Set = {}
+			Columns[Page] = Set
+			for _, ColumnName in ipairs({ "Left", "Right" }) do
+				Set[ColumnName] = New("ScrollingFrame", {
+					Name = ColumnName .. "Column",
+					Position = ColumnName == "Left" and UDim2.fromOffset(12, 9) or UDim2.new(0.5, 6, 0, 9),
+					Size = UDim2.new(0.5, -18, 1, -19),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					ScrollBarThickness = 0,
+					CanvasSize = UDim2.new(),
+					AutomaticCanvasSize = Enum.AutomaticSize.Y,
+					ScrollingDirection = Enum.ScrollingDirection.Y,
+					ClipsDescendants = true,
+					Parent = Page,
+				}, {
+					New("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
+					New("UIPadding", { PaddingBottom = UDim.new(0, 4) }),
+				})
+			end
+		end
+		return Set[Side]
 	end
 
 	function Window:AddTab(Opt)
@@ -2194,87 +2234,160 @@ function Library:CreateWindow(Options)
 
 		local Tab = { Name = Opt.Name, Index = Index, Page = Page }
 
-		function Tab:AddGroupbox(GroupOpt)
-			if type(GroupOpt) == "string" then GroupOpt = { Name = GroupOpt } end
-			local Side = string.lower(tostring(GroupOpt.Side or "left")) == "right" and "Right" or "Left"
-			local Set = Columns[Page]
-			if not Set then
-				Set = {}
-				Columns[Page] = Set
-				for _, ColumnName in ipairs({ "Left", "Right" }) do
-					Set[ColumnName] = New("ScrollingFrame", {
-						Name = ColumnName .. "Column",
-						Position = ColumnName == "Left" and UDim2.fromOffset(12, 9) or UDim2.new(0.5, 6, 0, 9),
-						Size = UDim2.new(0.5, -18, 1, -19),
-						BackgroundTransparency = 1,
-						BorderSizePixel = 0,
-						ScrollBarThickness = 0,
-						CanvasSize = UDim2.new(),
-						AutomaticCanvasSize = Enum.AutomaticSize.Y,
-						ScrollingDirection = Enum.ScrollingDirection.Y,
-						ClipsDescendants = true,
-						Parent = Page,
-					}, {
-						New("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
-						New("UIPadding", { PaddingBottom = UDim.new(0, 4) }),
-					})
-				end
+		local function Attach(Target, TargetPage, ModeName, RevealFn)
+			function Target:AddGroupbox(GroupOpt)
+				if type(GroupOpt) == "string" then GroupOpt = { Name = GroupOpt } end
+				local Side = string.lower(tostring(GroupOpt.Side or "left")) == "right" and "Right" or "Left"
+				local Column = GetColumn(TargetPage, Side)
+				local Box = New("Frame", {
+					LayoutOrder = Next(),
+					Size = UDim2.new(1, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundColor3 = Theme.White,
+					BorderSizePixel = 0,
+					Parent = Column,
+				}, {
+					Corner(8),
+					Grad(Color3.fromRGB(27, 28, 36), Color3.fromRGB(20, 21, 28), 90),
+					New("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }),
+				})
+				local Head = Text(Box, GroupOpt.Name, 14, Theme.Text, "Medium")
+				Head.LayoutOrder = 1
+				Head.Size = UDim2.new(1, 0, 0, 35)
+				New("UIPadding", { PaddingLeft = UDim.new(0, 11), Parent = Head })
+				New("Frame", {
+					LayoutOrder = 2,
+					Size = UDim2.new(1, 0, 0, 1),
+					BackgroundColor3 = Theme.Stroke,
+					BorderSizePixel = 0,
+					Parent = Box,
+				})
+				local Body = New("Frame", {
+					LayoutOrder = 3,
+					Size = UDim2.new(1, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 1,
+					Parent = Box,
+				}, {
+					New("UIPadding", {
+						PaddingTop = UDim.new(0, 8),
+						PaddingBottom = UDim.new(0, 10),
+						PaddingLeft = UDim.new(0, 16),
+						PaddingRight = UDim.new(0, 16),
+					}),
+					New("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder }),
+				})
+				table.insert(SearchIndex, {
+					Name = GroupOpt.Name,
+					Kind = "Section",
+					Object = Box,
+					Scroller = Column,
+					Page = Index,
+					Mode = ModeName,
+					Reveal = RevealFn,
+					Path = ModeName,
+				})
+				return NewContainer(Body, {
+					Scroller = Column,
+					Section = GroupOpt.Name,
+					Page = Index,
+					Mode = ModeName,
+					Reveal = RevealFn,
+				})
 			end
-			local Column = Set[Side]
-			local Box = New("Frame", {
-				LayoutOrder = Next(),
-				Size = UDim2.new(1, 0, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundColor3 = Theme.White,
-				BorderSizePixel = 0,
-				Parent = Column,
-			}, {
-				Corner(8),
-				Grad(Color3.fromRGB(27, 28, 36), Color3.fromRGB(20, 21, 28), 90),
-				New("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }),
-			})
-			local Head = Text(Box, GroupOpt.Name, 14, Theme.Text, "Medium")
-			Head.LayoutOrder = 1
-			Head.Size = UDim2.new(1, 0, 0, 35)
-			New("UIPadding", { PaddingLeft = UDim.new(0, 11), Parent = Head })
-			New("Frame", {
-				LayoutOrder = 2,
-				Size = UDim2.new(1, 0, 0, 1),
-				BackgroundColor3 = Theme.Stroke,
-				BorderSizePixel = 0,
-				Parent = Box,
-			})
-			local Body = New("Frame", {
-				LayoutOrder = 3,
-				Size = UDim2.new(1, 0, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundTransparency = 1,
-				Parent = Box,
-			}, {
-				New("UIPadding", {
-					PaddingTop = UDim.new(0, 8),
-					PaddingBottom = UDim.new(0, 10),
-					PaddingLeft = UDim.new(0, 16),
-					PaddingRight = UDim.new(0, 16),
-				}),
-				New("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder }),
-			})
-			table.insert(SearchIndex, {
-				Name = GroupOpt.Name,
-				Kind = "Section",
-				Object = Box,
-				Scroller = Column,
-				Page = Index,
-				Mode = Opt.Name,
-				Path = Opt.Name,
-			})
-			return NewContainer(Body, {
-				Scroller = Column,
-				Section = GroupOpt.Name,
-				Page = Index,
-				Mode = Opt.Name,
-			})
 		end
+
+		Attach(Tab, Page, Opt.Name, nil)
+
+		local Subs = {}
+		local Bar
+
+		local function PickSub(Target)
+			for _, Sub in ipairs(Subs) do
+				local On = Sub == Target
+				Sub.Page.Visible = On
+				Tween(Sub.Button, { BackgroundTransparency = On and 0 or 1 })
+				Tween(Sub.Label, { TextColor3 = On and Theme.Text or Theme.Dim })
+			end
+		end
+
+		function Tab:AddTabbox(SubOpt)
+			if type(SubOpt) == "string" then SubOpt = { Name = SubOpt } end
+			if not Bar then
+				Bar = New("Frame", {
+					LayoutOrder = 0,
+					Size = UDim2.fromOffset(0, 28),
+					AutomaticSize = Enum.AutomaticSize.X,
+					BackgroundColor3 = Theme.Field,
+					BorderSizePixel = 0,
+					Visible = SelectedIndex == Index,
+					Parent = Tools,
+				}, {
+					Corner(7),
+					New("UIPadding", {
+						PaddingTop = UDim.new(0, 3),
+						PaddingBottom = UDim.new(0, 3),
+						PaddingLeft = UDim.new(0, 3),
+						PaddingRight = UDim.new(0, 3),
+					}),
+					New("UIListLayout", {
+						FillDirection = Enum.FillDirection.Horizontal,
+						VerticalAlignment = Enum.VerticalAlignment.Center,
+						SortOrder = Enum.SortOrder.LayoutOrder,
+						Padding = UDim.new(0, 2),
+					}),
+				})
+				Tabs[Index].Bar = Bar
+			end
+
+			local Sub = {}
+			Sub.Page = New("Frame", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Visible = false,
+				Parent = Page,
+			})
+			Sub.Button = New("TextButton", {
+				LayoutOrder = #Subs + 1,
+				Size = UDim2.fromOffset(0, 22),
+				AutomaticSize = Enum.AutomaticSize.X,
+				BackgroundColor3 = Theme.Track,
+				BackgroundTransparency = 1,
+				AutoButtonColor = false,
+				Text = "",
+				Parent = Bar,
+			}, {
+				Corner(5),
+				New("UIPadding", { PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
+			})
+			Sub.Label = New("TextLabel", {
+				Size = UDim2.fromOffset(0, 22),
+				AutomaticSize = Enum.AutomaticSize.X,
+				BackgroundTransparency = 1,
+				Text = SubOpt.Name,
+				TextSize = 12,
+				TextColor3 = Theme.Dim,
+				FontFace = Face("Medium"),
+				Parent = Sub.Button,
+			})
+			table.insert(Subs, Sub)
+
+			local function Reveal() PickSub(Sub) end
+			Sub.Button.MouseButton1Click:Connect(Reveal)
+			table.insert(SearchIndex, {
+				Name = SubOpt.Name,
+				Kind = "Page",
+				Page = Index,
+				Path = Opt.Name,
+				Reveal = Reveal,
+			})
+			if #Subs == 1 then Reveal() end
+
+			local SubTab = { Name = SubOpt.Name, Page = Sub.Page }
+			Attach(SubTab, Sub.Page, Opt.Name .. " / " .. SubOpt.Name, Reveal)
+			return SubTab
+		end
+		Tab.AddSubTab = Tab.AddTabbox
 
 		return Tab
 	end
@@ -2765,6 +2878,7 @@ function Library:CreateWindow(Options)
 
 		local function GoTo(Entry)
 			Select(Entry.Page)
+			if Entry.Reveal then Entry.Reveal() end
 			if Entry.Object then
 				task.spawn(function()
 					task.wait(0.1)
