@@ -9,6 +9,7 @@ local Window = Library:CreateWindow({
 
 local ExampleTab = Window:AddTab({ Name = "Example Tab", Icon = "layout-dashboard" })
 local ExampleTab2 = Window:AddTab({ Name = "Example Tab 2", Icon = "eye" })
+local ExampleTab3 = Window:AddTab({ Name = "Example Tab 3", Icon = "settings" })
 
 local ExampleOptions = { "Example Option 1", "Example Option 2", "Example Option 3", "Example Option 4" }
 local ExampleItems = {
@@ -161,6 +162,42 @@ Example4:AddSlider({
 })
 
 Example4:AddToggle({ Name = "Example Toggle 7", Flag = "ExampleToggle7", Default = false })
+
+local ExampleTabbox1 = ExampleTab3:AddTabbox("Example Tabbox 1")
+local ExampleTabbox2 = ExampleTab3:AddTabbox("Example Tabbox 2")
+
+local Example5 = ExampleTabbox1:AddGroupbox({ Name = "Example 5", Side = "Left" })
+local Example6 = ExampleTabbox1:AddGroupbox({ Name = "Example 6", Side = "Right" })
+local Example7 = ExampleTabbox2:AddGroupbox({ Name = "Example 7", Side = "Left" })
+local Example8 = ExampleTabbox2:AddGroupbox({ Name = "Example 8", Side = "Right" })
+
+Example5:AddToggle({ Name = "Example Toggle 8", Flag = "ExampleToggle8", Default = true })
+Example5:AddSlider({
+	Name = "Example Slider 4",
+	Flag = "ExampleSlider4",
+	Min = 0,
+	Max = 100,
+	Default = 25,
+	Format = Percent,
+})
+
+Example6:AddDropdown({
+	Name = "Example Dropdown 2",
+	Flag = "ExampleDropdown2",
+	Options = ExampleOptions,
+	Default = "Example Option 2",
+})
+
+Example7:AddToggle({ Name = "Example Toggle 9", Flag = "ExampleToggle9", Default = false })
+Example7:AddInput({ Name = "Example Input 2", Flag = "ExampleInput2", Placeholder = "Example placeholder" })
+
+Example8:AddColor({ Name = "Example Color 3", Flag = "ExampleColor3", Default = Color3.fromRGB(80, 160, 255) })
+Example8:AddButton({
+	Name = "Example Button 3",
+	Callback = function()
+		Window:Notify("Example", "Example Button 3 was pressed.", 3, "Info")
+	end,
+})
 
 Window:AddKeybind("Example Toggle", "Toggle", function() return ExampleToggle.Get() end)
 Window:AddKeybind("Example Toggle 2", "Toggle", function() return Window.Flags.ExampleToggle2 end)
