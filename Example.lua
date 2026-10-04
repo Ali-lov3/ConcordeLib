@@ -1,73 +1,171 @@
-local ConcordeLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-lov3/ConcordeLib/refs/heads/main/ConcordeLib.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/USERNAME/REPO/main/Source.lua"))()
 
-local Example = ConcordeLib.new({
-    Logo       = "rbxassetid://10723415903",
-    Accent     = Color3.fromRGB(240, 45, 70),
-    Background = Color3.fromRGB(11, 12, 16),
-    Sidebar    = Color3.fromRGB(14, 15, 20),
-    TextColor  = Color3.fromRGB(240, 240, 245),
-    Subtitle   = "Example Subtitle",
-    Keybind    = Enum.KeyCode.RightShift
+local Window = Library:CreateWindow({
+	Title = "Example Hub",
+	Logo = "hexagon",
+	ConfigFolder = "ExampleHub",
+	OpenKey = Enum.KeyCode.RightShift,
 })
 
-local ExampleTab1 = Example:AddTab("swords", "Example Tab 1")
-local ExampleTab2 = Example:AddTab("eye", "Example Tab 2")
-local ExampleTab3 = Example:AddTab("user", "Example Tab 3")
-local ExampleTab4 = Example:AddTab("layers", "Example Tab 4")
-local ExampleTab5 = Example:AddTab("settings", "Example Tab 5")
+local MainTab = Window:AddTab({ Name = "Main", Icon = "layout-dashboard" })
+local VisualsTab = Window:AddTab({ Name = "Visuals", Icon = "eye" })
 
-local ExampleCol1, ExampleCol2 = ExampleTab1:AddSubPage("Example SubPage 1")
+local Options = { "Example Option 1", "Example Option 2", "Example Option 3", "Example Option 4" }
+local Items = {
+	"Example Item 1", "Example Item 2", "Example Item 3", "Example Item 4",
+	"Example Item 5", "Example Item 6", "Example Item 7", "Example Item 8",
+}
 
-local ExampleTitle1 = Example:Title("Example Title 1", ExampleCol1)
-local ExampleToggle1 = Example:Toggle("Example Toggle 1", false, ExampleCol1, { keybind = "E", color = Color3.fromRGB(240, 45, 70) })
-local ExampleToggle2 = Example:Toggle("Example Toggle 2", true, ExampleCol1)
-local ExampleToggle3 = Example:Toggle("Example Toggle 3", false, ExampleCol1)
-local ExampleToggle4 = Example:Toggle("Example Toggle 4", false, ExampleCol1, { keybind = "Q" })
-local ExampleDropdown1 = Example:Dropdown("Example Dropdown 1", "Example 1", {"Example 1", "Example 2", "Example 3"}, ExampleCol1)
-local ExampleDropdown2 = Example:Dropdown("Example Dropdown 2", "Example 1", {"Example 1", "Example 2", "Example 3"}, ExampleCol1)
-local ExampleSlider1 = Example:Slider("Example Slider 1", "°", ExampleCol1, 10, 360, 180)
-local ExampleSlider2 = Example:Slider("Example Slider 2", "m", ExampleCol1, 50, 2000, 500)
-local ExampleButton1 = Example:Button("Example Button 1", ExampleCol1, function() Example:Notify("Example Notification!") end)
+local function Percent(Value)
+	return string.format("%.0f%%", Value)
+end
 
-local ExampleTitle2 = Example:Title("Example Title 2", ExampleCol2)
-local ExampleToggle5 = Example:Toggle("Example Toggle 5", true, ExampleCol2, { color = Color3.fromRGB(0, 170, 255) })
-local ExampleSlider3 = Example:Slider("Example Slider 3", "", ExampleCol2, 0, 1, 0.35)
-local ExampleToggle6 = Example:Toggle("Example Toggle 6", true, ExampleCol2)
-local ExampleRangeSlider1 = Example:RangeSlider("Example Range Slider 1", "", ExampleCol2, 0, 50, 8, 24)
-local ExampleSlider4 = Example:Slider("Example Slider 4", "ms", ExampleCol2, 0, 500, 80)
-local ExampleRangeSlider2 = Example:RangeSlider("Example Range Slider 2", "%", ExampleCol2, 0, 100, 60, 95)
+local Combat = MainTab:AddGroupbox({ Name = "Combat", Side = "Left" })
+local Extras = MainTab:AddGroupbox({ Name = "Extras", Side = "Right" })
 
-local ExampleCol3, ExampleCol4 = ExampleTab1:AddSubPage("Example SubPage 2")
+Combat:AddLabel("Labels wrap automatically and can be updated.")
 
-local ExampleTitle3 = Example:Title("Example Title 3", ExampleCol3)
-local ExampleToggle7 = Example:Toggle("Example Toggle 7", false, ExampleCol3, { keybind = "V", color = Color3.fromRGB(255, 170, 0) })
-local ExampleSlider5 = Example:Slider("Example Slider 5", "%", ExampleCol3, 0, 100, 100)
+local Aim = Combat:AddToggle({
+	Name = "Example Toggle",
+	Flag = "ExampleToggle",
+	Default = false,
+	Callback = function(State)
+		print("Example Toggle", State)
+	end,
+	SettingsTitle = "Example Toggle settings",
+	Settings = function(Pop)
+		Pop:AddToggle({ Name = "Example Toggle Option", Flag = "ExampleToggleOption", Default = true })
+		Pop:AddDropdown({
+			Name = "Example Dropdown Option",
+			Flag = "ExampleDropdownOption",
+			Options = { "Example 1", "Example 2", "Example 3" },
+			Default = "Example 1",
+		})
+		Pop:AddSlider({
+			Name = "Example Slider Option",
+			Flag = "ExampleSliderOption",
+			Min = 0,
+			Max = 100,
+			Default = 50,
+			Format = Percent,
+		})
+	end,
+})
 
-local ExampleCol5, ExampleCol6 = ExampleTab2:AddSubPage("Example SubPage 3")
+Combat:AddToggle({ Name = "Example Toggle 2", Flag = "ExampleToggle2", Default = true })
+Combat:AddToggle({ Name = "Example Toggle 3", Flag = "ExampleToggle3", Default = false })
 
-local ExampleTitle4 = Example:Title("Example Title 4", ExampleCol5)
-local ExampleToggle8 = Example:Toggle("Example Toggle 8", true, ExampleCol5, { color = Color3.fromRGB(255, 255, 255) })
-local ExampleToggle9 = Example:Toggle("Example Toggle 9", false, ExampleCol5, { color = Color3.fromRGB(240, 45, 70) })
-local ExampleToggle10 = Example:Toggle("Example Toggle 10", true, ExampleCol5)
+Combat:AddDropdown({
+	Name = "Example Dropdown",
+	Flag = "ExampleDropdown",
+	Options = Options,
+	Default = "Example Option 1",
+	Callback = function(Value)
+		print("Dropdown", Value)
+	end,
+})
 
-local ExampleCol7, ExampleCol8 = ExampleTab2:AddSubPage("Example SubPage 4")
+Combat:AddMultiDropdown({
+	Name = "Example Multi Dropdown",
+	Flag = "ExampleMultiDropdown",
+	Options = Options,
+	Default = { "Example Option 1" },
+	Callback = function(Values)
+		print("Multi", table.concat(Values, ", "))
+	end,
+})
 
-local ExampleTitle5 = Example:Title("Example Title 5", ExampleCol7)
-local ExampleToggle11 = Example:Toggle("Example Toggle 11", true, ExampleCol7, { color = Color3.fromRGB(0, 255, 120) })
+Combat:AddSearchDropdown({
+	Name = "Example Search Dropdown",
+	Flag = "ExampleSearchDropdown",
+	Options = Items,
+	Default = "Example Item 1",
+})
 
-local ExampleCol9, ExampleCol10 = ExampleTab3:AddSubPage("Example SubPage 5")
+Combat:AddButton({
+	Name = "Example Button",
+	Callback = function()
+		Window:Notify("Example", "Example Button was pressed.", 3, "Success")
+	end,
+})
 
-local ExampleTitle6 = Example:Title("Example Title 6", ExampleCol9)
-local ExampleToggle12 = Example:Toggle("Example Toggle 12", true, ExampleCol9)
+Extras:AddLabel("Put as many groupboxes as you like in each column.")
 
-local ExampleCol11, ExampleCol12 = ExampleTab4:AddSubPage("Example SubPage 6")
+Extras:AddSlider({
+	Name = "Example Slider",
+	Flag = "ExampleSlider",
+	Min = 0,
+	Max = 100,
+	Default = 50,
+	Format = Percent,
+})
 
-local ExampleTitle7 = Example:Title("Example Title 7", ExampleCol11)
-local ExampleToggle13 = Example:Toggle("Example Toggle 13", false, ExampleCol11, { keybind = "Z" })
-local ExampleToggle14 = Example:Toggle("Example Toggle 14", false, ExampleCol11, { keybind = "X" })
+Extras:AddSlider({
+	Name = "Example Slider 2",
+	Flag = "ExampleSlider2",
+	Min = 0,
+	Max = 10,
+	Default = 5,
+})
 
-local ExampleCol13, ExampleCol14 = ExampleTab5:AddSubPage("Example SubPage 7")
+Extras:AddRangeSlider({
+	Name = "Example Range Slider",
+	FlagMin = "ExampleRangeMin",
+	FlagMax = "ExampleRangeMax",
+	Min = 0,
+	Max = 100,
+	DefaultMin = 20,
+	DefaultMax = 80,
+})
 
-local ExampleKeybindApply1 = Example:KeybindApply(ExampleCol13)
-local ExampleThemeSettings1 = Example:ThemeSettingsApply(ExampleCol13, ExampleCol14)
-local ExampleConfigApply1 = Example:ConfigApply(ExampleCol14, ExampleCol14, "ExampleConfigFolder")
+Extras:AddColor({
+	Name = "Example Color",
+	Flag = "ExampleColor",
+	Default = Color3.fromRGB(240, 84, 88),
+	Callback = function(Color)
+		print("Color", Color)
+	end,
+})
+
+Extras:AddInput({
+	Name = "Example Input",
+	Flag = "ExampleInput",
+	Placeholder = "Example placeholder",
+	Callback = function(Value)
+		print("Input", Value)
+	end,
+})
+
+Extras:AddToggle({ Name = "Example Toggle 4", Flag = "ExampleToggle4", Default = true })
+
+Extras:AddButton({
+	Name = "Example Button 2",
+	Callback = function()
+		Window:Notify("Example", "Example Button 2 was pressed.", 3, "Info")
+	end,
+})
+
+local Esp = VisualsTab:AddGroupbox({ Name = "Players", Side = "Left" })
+local World = VisualsTab:AddGroupbox({ Name = "World", Side = "Right" })
+
+Esp:AddToggle({ Name = "Boxes", Flag = "Boxes", Default = false })
+Esp:AddToggle({ Name = "Names", Flag = "Names", Default = false })
+Esp:AddColor({ Name = "Box Color", Flag = "BoxColor", Default = Color3.fromRGB(255, 255, 255) })
+
+World:AddSlider({
+	Name = "Field Of View",
+	Flag = "FieldOfView",
+	Min = 40,
+	Max = 120,
+	Default = 70,
+})
+
+World:AddToggle({ Name = "Fullbright", Flag = "Fullbright", Default = false })
+
+Window:AddKeybind("Example Toggle", "Toggle", function() return Aim.Get() end)
+Window:AddKeybind("Example Toggle 2", "Toggle", function() return Window.Flags.ExampleToggle2 end)
+
+Window:ConfigManager()
+Window:SettingManager()
+Window:SearchManager()
+Window:KeybindList()
