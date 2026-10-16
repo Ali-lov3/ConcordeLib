@@ -3091,22 +3091,22 @@ function Library:CreateWindow(Options)
 
 		local function GradientOption(Flag, Default)
 			return function(Pop)
-				Pop:AddToggle({ Name = "Gradient", Flag = Flag, Default = Default })
+				Pop:AddToggle({ Name = "Gradient", Flag = Flag, Default = false })
 			end
 		end
 
-		Manager:AddToggle({ Name = "ESP enabled", Flag = "ESP_Enabled", Default = true })
+		Manager:AddToggle({ Name = "ESP enabled", Flag = "ESP_Enabled", Default = false })
 		Manager:AddToggle({
-			Name = "Box", Flag = "ESP_Box", Default = true,
+			Name = "Box", Flag = "ESP_Box", Default = false,
 			Color = White, ColorFlag = "ESP_BoxColor", ColorTitle = "Box color (no gradient)",
 			SettingsTitle = "Box settings", Settings = GradientOption("ESP_BoxGradient", true),
 		})
 		Manager:AddToggle({
-			Name = "Glow", Flag = "ESP_Glow", Default = true,
+			Name = "Glow", Flag = "ESP_Glow", Default = false,
 			Color = Pink, ColorFlag = "ESP_GlowColor", ColorTitle = "Glow color (no gradient)",
 			SettingsTitle = "Glow settings",
 			Settings = function(Pop)
-				Pop:AddToggle({ Name = "Gradient", Flag = "ESP_GlowGradient", Default = true })
+				Pop:AddToggle({ Name = "Gradient", Flag = "ESP_GlowGradient", Default = false })
 				Pop:AddSlider({
 					Name = "Transparency", Flag = "ESP_GlowTransparency",
 					Min = 0, Max = 1, Step = 0.05, Default = 0.4,
@@ -3114,14 +3114,14 @@ function Library:CreateWindow(Options)
 				})
 			end,
 		})
-		Manager:AddToggle({ Name = "Healthbar", Flag = "ESP_HealthBar", Default = true, SettingsTitle = "Healthbar settings", Settings = GradientOption("ESP_HealthBarGradient", false) })
-		Manager:AddToggle({ Name = "Health text", Flag = "ESP_HealthText", Default = true, SettingsTitle = "Health text settings", Settings = GradientOption("ESP_HealthTextGradient", false) })
-		Manager:AddToggle({ Name = "Name (@user)", Flag = "ESP_Name", Default = true, SettingsTitle = "Name settings", Settings = GradientOption("ESP_NameGradient", true) })
-		Manager:AddToggle({ Name = "Display name", Flag = "ESP_DisplayName", Default = true })
-		Manager:AddToggle({ Name = "Avatar", Flag = "ESP_Avatar", Default = true })
-		Manager:AddToggle({ Name = "Weapon", Flag = "ESP_Weapon", Default = true, SettingsTitle = "Weapon settings", Settings = GradientOption("ESP_WeaponGradient", true) })
-		Manager:AddToggle({ Name = "Backpack", Flag = "ESP_Backpack", Default = true, SettingsTitle = "Backpack settings", Settings = GradientOption("ESP_BackpackGradient", true) })
-		Manager:AddToggle({ Name = "Distance", Flag = "ESP_Distance", Default = true, SettingsTitle = "Distance settings", Settings = GradientOption("ESP_DistanceGradient", true) })
+		Manager:AddToggle({ Name = "Healthbar", Flag = "ESP_HealthBar", Default = false, SettingsTitle = "Healthbar settings", Settings = GradientOption("ESP_HealthBarGradient", false) })
+		Manager:AddToggle({ Name = "Health text", Flag = "ESP_HealthText", Default = false, SettingsTitle = "Health text settings", Settings = GradientOption("ESP_HealthTextGradient", false) })
+		Manager:AddToggle({ Name = "Name (@user)", Flag = "ESP_Name", Default = false, SettingsTitle = "Name settings", Settings = GradientOption("ESP_NameGradient", true) })
+		Manager:AddToggle({ Name = "Display name", Flag = "ESP_DisplayName", Default = false })
+		Manager:AddToggle({ Name = "Avatar", Flag = "ESP_Avatar", Default = false })
+		Manager:AddToggle({ Name = "Weapon", Flag = "ESP_Weapon", Default = false, SettingsTitle = "Weapon settings", Settings = GradientOption("ESP_WeaponGradient", true) })
+		Manager:AddToggle({ Name = "Backpack", Flag = "ESP_Backpack", Default = false, SettingsTitle = "Backpack settings", Settings = GradientOption("ESP_BackpackGradient", true) })
+		Manager:AddToggle({ Name = "Distance", Flag = "ESP_Distance", Default = false, SettingsTitle = "Distance settings", Settings = GradientOption("ESP_DistanceGradient", true) })
 
 		GradientBox:AddColor({ Name = "Gradient color 1", Flag = "ESP_Gradient1", Default = White })
 		GradientBox:AddColor({ Name = "Gradient color 2", Flag = "ESP_Gradient2", Default = Pink })
