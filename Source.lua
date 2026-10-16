@@ -3080,41 +3080,272 @@ function Library:CreateWindow(Options)
 		Opt = Opt or {}
 		if Window.ESP then return Window.ESP end
 
+		local Pink = Color3.fromRGB(255, 80, 180)
+		local White = Color3.new(1, 1, 1)
+		local Black = Color3.new(0, 0, 0)
+
 		local Tab = Window:AddTab({ Name = Opt.Name or "ESP", Icon = Opt.Icon or "eye" })
 		local Manager = Tab:AddGroupbox({ Name = "ESP Manager", Side = "Left" })
+		local GradientBox = Tab:AddGroupbox({ Name = "Gradient", Side = "Left" })
 		local PreviewBox = Tab:AddGroupbox({ Name = "ESP Preview", Side = "Right" })
 
-		local Default = Opt.Default ~= false
+		local function GradientOption(Flag, Default)
+			return function(Pop)
+				Pop:AddToggle({ Name = "Gradient", Flag = Flag, Default = Default })
+			end
+		end
 
+		Manager:AddToggle({ Name = "ESP enabled", Flag = "ESP_Enabled", Default = true })
 		Manager:AddToggle({
-			Name = "Box",
-			Flag = "ESP_Box",
-			Default = Default,
-			Color = Color3.fromRGB(240, 84, 88),
-			ColorFlag = "ESP_BoxColor",
-			ColorTitle = "Box color",
+			Name = "Box", Flag = "ESP_Box", Default = true,
+			Color = White, ColorFlag = "ESP_BoxColor", ColorTitle = "Box color (no gradient)",
+			SettingsTitle = "Box settings", Settings = GradientOption("ESP_BoxGradient", true),
 		})
 		Manager:AddToggle({
-			Name = "Healthbar",
-			Flag = "ESP_Health",
-			Default = Default,
-			Color = Color3.fromRGB(80, 220, 140),
-			ColorFlag = "ESP_HealthColor",
-			ColorTitle = "Healthbar color",
+			Name = "Glow", Flag = "ESP_Glow", Default = true,
+			Color = Pink, ColorFlag = "ESP_GlowColor", ColorTitle = "Glow color (no gradient)",
+			SettingsTitle = "Glow settings",
+			Settings = function(Pop)
+				Pop:AddToggle({ Name = "Gradient", Flag = "ESP_GlowGradient", Default = true })
+				Pop:AddSlider({
+					Name = "Transparency", Flag = "ESP_GlowTransparency",
+					Min = 0, Max = 1, Step = 0.05, Default = 0.4,
+					Format = function(Value) return string.format("%.2f", Value) end,
+				})
+			end,
 		})
-		Manager:AddToggle({
-			Name = "Name",
-			Flag = "ESP_Name",
-			Default = Default,
-			Color = Color3.fromRGB(255, 255, 255),
-			ColorFlag = "ESP_NameColor",
-			ColorTitle = "Name color",
-		})
+		Manager:AddToggle({ Name = "Healthbar", Flag = "ESP_HealthBar", Default = true, SettingsTitle = "Healthbar settings", Settings = GradientOption("ESP_HealthBarGradient", false) })
+		Manager:AddToggle({ Name = "Health text", Flag = "ESP_HealthText", Default = true, SettingsTitle = "Health text settings", Settings = GradientOption("ESP_HealthTextGradient", false) })
+		Manager:AddToggle({ Name = "Name (@user)", Flag = "ESP_Name", Default = true, SettingsTitle = "Name settings", Settings = GradientOption("ESP_NameGradient", true) })
+		Manager:AddToggle({ Name = "Display name", Flag = "ESP_DisplayName", Default = true })
+		Manager:AddToggle({ Name = "Avatar", Flag = "ESP_Avatar", Default = true })
+		Manager:AddToggle({ Name = "Weapon", Flag = "ESP_Weapon", Default = true, SettingsTitle = "Weapon settings", Settings = GradientOption("ESP_WeaponGradient", true) })
+		Manager:AddToggle({ Name = "Backpack", Flag = "ESP_Backpack", Default = true, SettingsTitle = "Backpack settings", Settings = GradientOption("ESP_BackpackGradient", true) })
+		Manager:AddToggle({ Name = "Distance", Flag = "ESP_Distance", Default = true, SettingsTitle = "Distance settings", Settings = GradientOption("ESP_DistanceGradient", true) })
 
-		-- Preview (rechts): Viewport mit dem eigenen Character + Overlay
+		GradientBox:AddColor({ Name = "Gradient color 1", Flag = "ESP_Gradient1", Default = White })
+		GradientBox:AddColor({ Name = "Gradient color 2", Flag = "ESP_Gradient2", Default = Pink })
+
+		-- gemeinsame Settings-Tabelle (wird pro Frame aus den Flags gelesen)
+		local Keys = {
+			"Box", "BoxGradient", "Glow", "GlowGradient",
+			"HealthBar", "HealthBarGradient", "HealthText", "HealthTextGradient",
+			"Name", "DisplayName", "NameGradient", "Avatar",
+			"Weapon", "WeaponGradient", "Backpack", "BackpackGradient",
+			"Distance", "DistanceGradient",
+		}
+		local FlagOf = {}
+		for _, Key in ipairs(Keys) do FlagOf[Key] = "ESP_" .. Key end
+
+		local S = {}
+		local LastC1, LastC2
+		local function ReadSettings()
+			S.Enabled = Config.ESP_Enabled == true
+			for _, Key in ipairs(Keys) do S[Key] = Config[FlagOf[Key]] == true end
+			S.GlowColor = Config.ESP_GlowColor or Pink
+			S.GlowTransparency = Config.ESP_GlowTransparency or 0.4
+			S.BoxColor = Config.ESP_BoxColor or White
+			local C1, C2 = Config.ESP_Gradient1 or White, Config.ESP_Gradient2 or Pink
+			if C1 ~= LastC1 or C2 ~= LastC2 then
+				LastC1, LastC2 = C1, C2
+				S.Seq = ColorSequence.new(C1, C2)
+			end
+			S.Any = S.Box or S.Glow or S.HealthBar or S.HealthText or S.Name or S.DisplayName
+				or S.Avatar or S.Weapon or S.Distance or S.Backpack
+		end
+
+		-- ein ESP-Layer (Preview und Welt-ESP nutzen exakt denselben Aufbau)
+		local function MakeLabel(Parent, Name, TextSize, Font)
+			local Label = New("TextLabel", {
+				Name = Name,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 0, 14),
+				Font = Font or Enum.Font.SourceSansBold,
+				TextSize = TextSize,
+				TextColor3 = White,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				Parent = Parent,
+			})
+			local LabelGradient = New("UIGradient", { Parent = Label })
+			New("UIStroke", { Thickness = 1, Color = Black, Parent = Label })
+			return Label, LabelGradient
+		end
+
+		local function BuildLayer(Parent)
+			local L = {}
+			L.Box = New("Frame", { BackgroundTransparency = 1, BorderSizePixel = 0, Visible = false, Parent = Parent })
+
+			L.Glow = New("ImageLabel", {
+				Name = "Glow",
+				BackgroundTransparency = 1,
+				Position = UDim2.fromOffset(-15, -15),
+				Size = UDim2.new(1, 30, 1, 30),
+				Image = "rbxassetid://5028857084",
+				ScaleType = Enum.ScaleType.Slice,
+				SliceCenter = Rect.new(24, 24, 276, 276),
+				ImageColor3 = White,
+				ZIndex = 0,
+				Parent = L.Box,
+			})
+			L.GlowGradient = New("UIGradient", { Parent = L.Glow })
+
+			L.Stroke = New("UIStroke", { Thickness = 1, Color = White, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = L.Box })
+			L.StrokeGradient = New("UIGradient", { Parent = L.Stroke })
+
+			L.Fill = New("Frame", {
+				BackgroundColor3 = White, BackgroundTransparency = 0.65, BorderSizePixel = 0,
+				Size = UDim2.fromScale(1, 1), Parent = L.Box,
+			})
+			L.FillGradient = New("UIGradient", { Rotation = 90, Parent = L.Fill })
+
+			L.HealthBarBg = New("Frame", {
+				BackgroundColor3 = Black, BackgroundTransparency = 0.4, BorderSizePixel = 0,
+				Size = UDim2.new(0, 2, 1, 0), Position = UDim2.new(0, -5, 0, 0), Parent = L.Box,
+			})
+			L.HealthBar = New("Frame", {
+				BackgroundColor3 = White, BorderSizePixel = 0, Size = UDim2.fromScale(1, 1), Parent = L.HealthBarBg,
+			})
+			L.HealthBarGradient = New("UIGradient", { Rotation = 90, Parent = L.HealthBar })
+
+			L.HealthText, L.HealthTextGradient = MakeLabel(L.Box, "HealthText", 11)
+			L.HealthText.Size = UDim2.new(0, 40, 0, 12)
+			L.HealthText.Position = UDim2.new(0, -47, 0, -2)
+			L.HealthText.TextXAlignment = Enum.TextXAlignment.Right
+
+			L.NameText, L.NameGradient = MakeLabel(L.Box, "NameText", 12)
+			L.NameText.Position = UDim2.new(0, 0, 0, -16)
+
+			L.AvatarImage = New("ImageLabel", {
+				BackgroundTransparency = 1, BorderSizePixel = 0,
+				Size = UDim2.fromOffset(25, 25), Position = UDim2.new(0.5, -12.5, 0, -43), Parent = L.Box,
+			})
+
+			L.WeaponText, L.WeaponTextGradient = MakeLabel(L.Box, "WeaponText", 11)
+			L.DistanceText, L.DistanceTextGradient = MakeLabel(L.Box, "DistanceText", 11)
+			L.BackpackText, L.BackpackTextGradient = MakeLabel(L.Box, "BackpackText", 10, Enum.Font.SourceSans)
+			return L
+		end
+
+		local function LoadAvatar(L, UserId)
+			task.spawn(function()
+				local Ok, Image, Ready = pcall(Players.GetUserThumbnailAsync, Players, UserId,
+					Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+				if Ok and Ready and L.AvatarImage.Parent then L.AvatarImage.Image = Image end
+			end)
+		end
+
+		local function Line(L, Prefix, Show, Content, UseGradient, Fallback, Offset)
+			local Label = L[Prefix .. "Text"]
+			local LabelGradient = L[Prefix .. "TextGradient"]
+			if not Show or not Content then
+				Label.Visible = false
+				return Offset
+			end
+			Label.Visible = true
+			Label.Text = Content
+			Label.Position = UDim2.new(0, 0, 1, Offset)
+			LabelGradient.Enabled = UseGradient
+			if UseGradient then LabelGradient.Color = S.Seq end
+			Label.TextColor3 = UseGradient and White or Fallback
+			return Offset + 14
+		end
+
+		-- D: Health, MaxHealth, DisplayName, UserName, Tool, Items, Distance
+		local function Style(L, D)
+			local Seq = S.Seq
+
+			if S.Glow then
+				L.Glow.Visible = true
+				L.Glow.ImageTransparency = S.GlowTransparency
+				L.GlowGradient.Enabled = S.GlowGradient
+				if S.GlowGradient then
+					L.GlowGradient.Color = Seq
+					L.Glow.ImageColor3 = White
+				else
+					L.Glow.ImageColor3 = S.GlowColor
+				end
+			else
+				L.Glow.Visible = false
+			end
+
+			L.Stroke.Enabled = S.Box
+			L.Fill.Visible = S.Box
+			local BoxGradient = S.Box and S.BoxGradient
+			L.StrokeGradient.Enabled = BoxGradient
+			L.FillGradient.Enabled = BoxGradient
+			if S.BoxGradient then
+				L.StrokeGradient.Color = Seq
+				L.FillGradient.Color = Seq
+				L.Stroke.Color = White
+				L.Fill.BackgroundColor3 = White
+			else
+				L.Stroke.Color = S.BoxColor
+				L.Fill.BackgroundColor3 = S.BoxColor
+			end
+
+			local Max = math.max(D.MaxHealth, 1)
+			local Percent = math.clamp(D.Health, 0, Max) / Max
+			local HealthColor = Color3.fromRGB(255, 0, 0):Lerp(Color3.fromRGB(0, 255, 0), Percent)
+
+			L.HealthBarBg.Visible = S.HealthBar
+			if S.HealthBar then
+				L.HealthBar.Size = UDim2.fromScale(1, Percent)
+				L.HealthBar.Position = UDim2.fromScale(0, 1 - Percent)
+				L.HealthBarGradient.Enabled = S.HealthBarGradient
+				if S.HealthBarGradient then
+					L.HealthBarGradient.Color = Seq
+					L.HealthBar.BackgroundColor3 = White
+				else
+					L.HealthBar.BackgroundColor3 = HealthColor
+				end
+			end
+
+			L.HealthText.Visible = S.HealthText
+			if S.HealthText then
+				L.HealthText.Text = math.floor(math.clamp(D.Health, 0, Max)) .. " HP"
+				L.HealthTextGradient.Enabled = S.HealthTextGradient
+				if S.HealthTextGradient then
+					L.HealthTextGradient.Color = Seq
+					L.HealthText.TextColor3 = White
+				else
+					L.HealthText.TextColor3 = HealthColor
+				end
+			end
+
+			local NameVisible = S.DisplayName or S.Name
+			L.NameText.Visible = NameVisible
+			if S.DisplayName and S.Name then
+				L.NameText.Text = D.DisplayName .. " (@" .. D.UserName .. ")"
+			elseif S.DisplayName then
+				L.NameText.Text = D.DisplayName
+			elseif S.Name then
+				L.NameText.Text = "@" .. D.UserName
+			end
+			L.NameGradient.Enabled = S.NameGradient
+			if S.NameGradient then L.NameGradient.Color = Seq end
+			L.NameText.TextColor3 = White
+
+			L.AvatarImage.Visible = S.Avatar
+			if S.Avatar then
+				L.AvatarImage.Position = UDim2.new(0.5, -12.5, 0, NameVisible and -43 or -27)
+			end
+
+			local Offset = 2
+			Offset = Line(L, "Weapon", S.Weapon, D.Tool, S.WeaponGradient, White, Offset)
+			Offset = Line(L, "Distance", S.Distance, D.Distance and (D.Distance .. " Studs"), S.DistanceGradient, Color3.fromRGB(200, 200, 200), Offset)
+			Line(L, "Backpack", S.Backpack, D.Items, S.BackpackGradient, Color3.fromRGB(180, 180, 180), Offset)
+
+			L.Box.Visible = S.Any
+		end
+
+		-- Preview: Viewport mit dem eigenen Character (ohne Animation, dreht sich im Kreis)
+		local HolderHeight = 320
+		local BoxHeight = math.floor(HolderHeight * 0.44)
+		local ModelFraction = 0.40
+
 		local Holder = New("Frame", {
 			LayoutOrder = Next(),
-			Size = UDim2.new(1, 0, 0, 270),
+			Size = UDim2.new(1, 0, 0, HolderHeight),
 			BackgroundColor3 = Theme.Field,
 			BorderSizePixel = 0,
 			ClipsDescendants = true,
@@ -3129,11 +3360,7 @@ function Library:CreateWindow(Options)
 			LightDirection = Vector3.new(-0.4, -0.6, 1),
 			Parent = Holder,
 		})
-		local Cam = New("Camera", {
-			FieldOfView = 70,
-			CFrame = CFrame.lookAt(Vector3.new(0, 0, -6.2), Vector3.new(0, 0, 0)),
-			Parent = View,
-		})
+		local Cam = New("Camera", { FieldOfView = 70, Parent = View })
 		View.CurrentCamera = Cam
 
 		local Overlay = New("Frame", {
@@ -3142,75 +3369,72 @@ function Library:CreateWindow(Options)
 			ZIndex = 2,
 			Parent = Holder,
 		})
-		local BoxFrame = New("Frame", {
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromScale(1, 0.69),
-			BackgroundTransparency = 1,
-			Parent = Overlay,
-		}, {
-			New("UIAspectRatioConstraint", { AspectRatio = 4 / 6 }),
-		})
-		local BoxStroke = New("UIStroke", {
-			Thickness = 1.5,
-			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-			Parent = BoxFrame,
-		})
-		local HealthBG = New("Frame", {
-			AnchorPoint = Vector2.new(1, 0),
-			Position = UDim2.new(0, -5, 0, 0),
-			Size = UDim2.new(0, 3, 1, 0),
-			BackgroundColor3 = Color3.new(0, 0, 0),
-			BackgroundTransparency = 0.35,
-			BorderSizePixel = 0,
-			Parent = BoxFrame,
-		})
-		local HealthFill = New("Frame", {
-			AnchorPoint = Vector2.new(0, 1),
-			Position = UDim2.fromScale(0, 1),
-			Size = UDim2.fromScale(1, 1),
-			BorderSizePixel = 0,
-			Parent = HealthBG,
-		})
-		local NameLabel = New("TextLabel", {
-			AnchorPoint = Vector2.new(0.5, 1),
-			Position = UDim2.new(0.5, 0, 0, -3),
-			Size = UDim2.new(1, 60, 0, 14),
-			BackgroundTransparency = 1,
-			Text = LocalPlayer.DisplayName,
-			TextSize = 13,
-			FontFace = Face("Medium"),
-			TextStrokeTransparency = 0.5,
-			Parent = BoxFrame,
+		local Preview = BuildLayer(Overlay)
+		Preview.Box.AnchorPoint = Vector2.new(0.5, 0.5)
+		Preview.Box.Position = UDim2.fromScale(0.5, 0.5)
+		Preview.Box.Size = UDim2.fromOffset(math.floor(BoxHeight * 0.65), BoxHeight)
+		LoadAvatar(Preview, LocalPlayer.UserId)
+
+		PreviewBox:AddSlider({
+			Name = "Rotation speed",
+			Flag = "ESP_PreviewSpeed",
+			Min = 0, Max = 360, Step = 5, Default = 60,
+			Suffix = "°/s",
 		})
 
+		local Model, Center = nil, Vector3.zero
+		local ModelHeight = 5.5
+		local Angle = 0
+
+		local function Fit()
+			local Distance = (ModelHeight / ModelFraction) / (2 * math.tan(math.rad(Cam.FieldOfView / 2)))
+			Cam.CFrame = CFrame.lookAt(Vector3.new(0, 0, -Distance), Vector3.zero)
+		end
+		Fit()
+
+		local Junk = {
+			"BaseScript", "Sound", "Animator", "AnimationController", "ForceField",
+			"BillboardGui", "Highlight", "ParticleEmitter", "Trail", "Beam",
+		}
+
 		local function BuildModel()
-			for _, Child in ipairs(View:GetChildren()) do
-				if Child:IsA("Model") then Child:Destroy() end
-			end
+			if Model then Model:Destroy() Model = nil end
 			local Char = LocalPlayer.Character
 			if not Char then return end
+
 			local WasArchivable = Char.Archivable
 			Char.Archivable = true
 			local Clone = Char:Clone()
 			Char.Archivable = WasArchivable
 			if not Clone then return end
+
 			for _, Item in ipairs(Clone:GetDescendants()) do
-				if Item:IsA("BaseScript") or Item:IsA("Sound") then Item:Destroy() end
+				for _, Class in ipairs(Junk) do
+					if Item:IsA(Class) then Item:Destroy() break end
+				end
 			end
+
 			local Root = Clone:FindFirstChild("HumanoidRootPart")
-			if not Root then
-				Clone:Destroy()
-				return
-			end
+			if not Root then Clone:Destroy() return end
 			Clone.PrimaryPart = Root
+
 			for _, Item in ipairs(Clone:GetDescendants()) do
-				if Item:IsA("BasePart") then Item.Anchored = true end
+				if Item:IsA("BasePart") then
+					Item.Anchored = true
+				elseif Item:IsA("JointInstance") then
+					pcall(function() Item.Transform = CFrame.identity end)
+				end
 			end
 			local Hum = Clone:FindFirstChildOfClass("Humanoid")
 			if Hum then Hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None end
-			Clone:PivotTo(CFrame.new(0, 0, 0))
+
+			Clone:PivotTo(CFrame.new())
+			local Box, Size = Clone:GetBoundingBox()
+			Center = Box.Position
+			ModelHeight = math.max(Size.Y, 1)
 			Clone.Parent = View
+			Model = Clone
+			Fit()
 		end
 
 		task.spawn(function()
@@ -3223,7 +3447,7 @@ function Library:CreateWindow(Options)
 			pcall(BuildModel)
 		end)
 
-		-- echtes ESP auf andere Spieler
+		-- Welt-ESP auf andere Spieler
 		local EspGui = New("ScreenGui", {
 			Name = GuiName .. "_ESP",
 			ResetOnSpawn = false,
@@ -3233,106 +3457,106 @@ function Library:CreateWindow(Options)
 		EspGui.Parent = Gui.Parent or LocalPlayer:WaitForChild("PlayerGui")
 
 		local Objects = {}
+		local Data = {}
+		local PreviewData = { Health = 100, MaxHealth = 100, DisplayName = LocalPlayer.DisplayName, UserName = LocalPlayer.Name, Distance = 42, Items = "[Item 1, Item 2]" }
 
 		local function Remove(Player)
-			local Entry = Objects[Player]
-			if Entry then
-				Entry.Bill:Destroy()
+			local L = Objects[Player]
+			if L then
+				L.Box:Destroy()
 				Objects[Player] = nil
 			end
 		end
 
 		local function Create(Player)
-			local Bill = New("BillboardGui", {
-				Name = Player.Name,
-				AlwaysOnTop = true,
-				ResetOnSpawn = false,
-				Size = UDim2.fromScale(4, 6),
-				Enabled = false,
-				Parent = EspGui,
-			})
-			local Box = New("Frame", {
-				Size = UDim2.fromScale(1, 1),
-				BackgroundTransparency = 1,
-				Parent = Bill,
-			})
-			local Outline = New("UIStroke", {
-				Thickness = 1.5,
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-				Parent = Box,
-			})
-			local BG = New("Frame", {
-				AnchorPoint = Vector2.new(1, 0),
-				Position = UDim2.new(0, -5, 0, 0),
-				Size = UDim2.new(0, 3, 1, 0),
-				BackgroundColor3 = Color3.new(0, 0, 0),
-				BackgroundTransparency = 0.35,
-				BorderSizePixel = 0,
-				Parent = Box,
-			})
-			local Fill = New("Frame", {
-				AnchorPoint = Vector2.new(0, 1),
-				Position = UDim2.fromScale(0, 1),
-				Size = UDim2.fromScale(1, 1),
-				BorderSizePixel = 0,
-				Parent = BG,
-			})
-			local Label = New("TextLabel", {
-				AnchorPoint = Vector2.new(0.5, 1),
-				Position = UDim2.new(0.5, 0, 0, -3),
-				Size = UDim2.new(1, 60, 0, 14),
-				BackgroundTransparency = 1,
-				Text = Player.DisplayName,
-				TextSize = 13,
-				FontFace = Face("Medium"),
-				TextStrokeTransparency = 0.5,
-				Parent = Box,
-			})
-			Objects[Player] = { Bill = Bill, Box = Box, Outline = Outline, BG = BG, Fill = Fill, Label = Label }
+			local L = BuildLayer(EspGui)
+			LoadAvatar(L, Player.UserId)
+			Objects[Player] = L
+		end
+
+		local function Update(Player, L)
+			local Camera = workspace.CurrentCamera
+			local Char = Player.Character
+			local Root = Char and Char:FindFirstChild("HumanoidRootPart")
+			local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
+			if not Camera or not Root or not Hum or Hum.Health <= 0 then
+				L.Box.Visible = false
+				return
+			end
+
+			local RootPos, OnScreen = Camera:WorldToViewportPoint(Root.Position)
+			if not OnScreen then
+				L.Box.Visible = false
+				return
+			end
+
+			local Head = Char:FindFirstChild("Head")
+			local Top = Head and (Head.Position + Vector3.new(0, 0.5, 0)) or (Root.Position + Vector3.new(0, 3, 0))
+			local Bottom = Root.Position - Vector3.new(0, 3.5, 0)
+			local TopScreen = Camera:WorldToViewportPoint(Top)
+			local BottomScreen = Camera:WorldToViewportPoint(Bottom)
+			local Height = math.abs(TopScreen.Y - BottomScreen.Y)
+			local Width = Height * 0.65
+
+			L.Box.Position = UDim2.fromOffset(RootPos.X - Width / 2, TopScreen.Y)
+			L.Box.Size = UDim2.fromOffset(Width, Height)
+
+			Data.Health = Hum.Health
+			Data.MaxHealth = Hum.MaxHealth
+			Data.DisplayName = Player.DisplayName
+			Data.UserName = Player.Name
+
+			local Tool = Char:FindFirstChildOfClass("Tool")
+			Data.Tool = (S.Weapon and Tool) and Tool.Name or nil
+
+			Data.Items = nil
+			if S.Backpack then
+				local Pack = Player:FindFirstChild("Backpack")
+				if Pack then
+					local Names = {}
+					for _, Item in ipairs(Pack:GetChildren()) do
+						if Item:IsA("Tool") then Names[#Names + 1] = Item.Name end
+					end
+					if #Names > 0 then Data.Items = "[" .. table.concat(Names, ", ") .. "]" end
+				end
+			end
+
+			Data.Distance = nil
+			if S.Distance then
+				local MyChar = LocalPlayer.Character
+				local MyRoot = MyChar and MyChar:FindFirstChild("HumanoidRootPart")
+				local From = MyRoot and MyRoot.Position or Camera.CFrame.Position
+				Data.Distance = math.floor((Root.Position - From).Magnitude)
+			end
+
+			Style(L, Data)
 		end
 
 		local Loop
-		Loop = RunService.RenderStepped:Connect(function()
-			local ShowBox = Config.ESP_Box == true
-			local ShowHealth = Config.ESP_Health == true
-			local ShowName = Config.ESP_Name == true
-			local BoxColor = Config.ESP_BoxColor or Color3.fromRGB(240, 84, 88)
-			local HealthColor = Config.ESP_HealthColor or Color3.fromRGB(80, 220, 140)
-			local NameColor = Config.ESP_NameColor or Color3.new(1, 1, 1)
+		Loop = RunService.RenderStepped:Connect(function(Dt)
+			ReadSettings()
 
-			-- Preview
-			BoxStroke.Enabled = ShowBox
-			BoxStroke.Color = BoxColor
-			HealthBG.Visible = ShowHealth
-			HealthFill.BackgroundColor3 = HealthColor
-			NameLabel.Visible = ShowName
-			NameLabel.TextColor3 = NameColor
+			-- Preview: kein Animator, Pose eingefroren, nur Drehung um die eigene Achse
+			if Model then
+				Angle = (Angle + Dt * math.rad(Config.ESP_PreviewSpeed or 60)) % (math.pi * 2)
+				Model:PivotTo(CFrame.Angles(0, Angle, 0) * CFrame.new(-Center))
+			end
 			local Char = LocalPlayer.Character
 			local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
-			local Percent = 1
-			if Hum and Hum.MaxHealth > 0 then Percent = math.clamp(Hum.Health / Hum.MaxHealth, 0, 1) end
-			HealthFill.Size = UDim2.fromScale(1, Percent)
+			local Tool = Char and Char:FindFirstChildOfClass("Tool")
+			PreviewData.Health = Hum and Hum.Health or 100
+			PreviewData.MaxHealth = Hum and Hum.MaxHealth or 100
+			PreviewData.Tool = Tool and Tool.Name or "Weapon"
+			Style(Preview, PreviewData)
 
-			-- Welt-ESP
 			for _, Player in ipairs(Players:GetPlayers()) do
 				if Player ~= LocalPlayer and not Objects[Player] then Create(Player) end
 			end
-			for Player, Entry in pairs(Objects) do
-				local PChar = Player.Character
-				local Root = PChar and PChar:FindFirstChild("HumanoidRootPart")
-				local PHum = PChar and PChar:FindFirstChildOfClass("Humanoid")
-				if Root and PHum and PHum.Health > 0 and (ShowBox or ShowHealth or ShowName) then
-					Entry.Bill.Adornee = Root
-					Entry.Bill.Enabled = true
-					Entry.Outline.Enabled = ShowBox
-					Entry.Outline.Color = BoxColor
-					Entry.BG.Visible = ShowHealth
-					Entry.Fill.BackgroundColor3 = HealthColor
-					Entry.Fill.Size = UDim2.fromScale(1, math.clamp(PHum.Health / math.max(PHum.MaxHealth, 1), 0, 1))
-					Entry.Label.Visible = ShowName
-					Entry.Label.TextColor3 = NameColor
+			for Player, L in pairs(Objects) do
+				if S.Enabled then
+					Update(Player, L)
 				else
-					Entry.Bill.Enabled = false
+					L.Box.Visible = false
 				end
 			end
 		end)
