@@ -202,6 +202,7 @@ Example8:AddButton({
 Window:AddKeybind("Example Toggle", "Toggle", function() return ExampleToggle.Get() end)
 Window:AddKeybind("Example Toggle 2", "Toggle", function() return Window.Flags.ExampleToggle2 end)
 
+Window:ESPManager()
 Window:ConfigManager()
 Window:SettingManager()
 Window:SearchManager()
