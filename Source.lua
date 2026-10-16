@@ -941,6 +941,58 @@ function Library:CreateWindow(Options)
 		local Caption = Text(Row, Name, 13, Theme.Text, "Medium")
 		Caption.Size = UDim2.new(1, -60, 1, 0)
 
+		local ColorKey, ColorSetter
+		if Opt.Color then
+			ColorKey = Opt.ColorFlag or (Key .. "Color")
+			local Offset = Opt.Settings and -64 or -36
+			Caption.Size = UDim2.new(1, Offset - 24, 1, 0)
+			local StartColor = Opt.Color
+			Config[ColorKey] = StartColor
+			local Ring = New("TextButton", {
+				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, Offset, 0.5, 0),
+				Size = UDim2.fromOffset(20, 20),
+				BackgroundColor3 = StartColor:Lerp(Color3.new(0, 0, 0), 0.55),
+				AutoButtonColor = false,
+				Text = "",
+				Parent = Row,
+			}, { Full() })
+			local RingAura = Stroke(StartColor, 3, 0.6)
+			RingAura.Parent = Ring
+			local Dot = New("Frame", {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromOffset(13, 13),
+				BackgroundColor3 = StartColor,
+				ZIndex = 2,
+				Parent = Ring,
+			}, { Full() })
+			local function ApplyColor(Color, Silent)
+				Dot.BackgroundColor3 = Color
+				RingAura.Color = Color
+				Ring.BackgroundColor3 = Color:Lerp(Color3.new(0, 0, 0), 0.55)
+				Config[ColorKey] = Color
+				if not Silent then
+					NotifyChange()
+					if Opt.ColorCallback then task.spawn(Opt.ColorCallback, Color) end
+				end
+			end
+			local ColorPop, ColorContainer = MakePopup(214, Opt.ColorTitle or (Name .. " color"))
+			local SetPicker = BuildPicker(ColorContainer.Frame, StartColor, function(Color)
+				ApplyColor(Color)
+			end)
+			ColorSetter = function(Value, Silent)
+				if typeof(Value) == "Color3" then
+					SetPicker(Value)
+					ApplyColor(Value, Silent)
+				end
+			end
+			Registry[ColorKey] = ColorSetter
+			Ring.MouseButton1Click:Connect(function()
+				TogglePopup(ColorPop, Ring)
+			end)
+		end
+
 		if Opt.Settings then
 			local Gear = New("TextButton", {
 				AnchorPoint = Vector2.new(1, 0.5),
@@ -1019,7 +1071,12 @@ function Library:CreateWindow(Options)
 			Set(Value and true or false, false, Silent)
 		end
 		if not Opt.Internal then Registry[Key] = Setter end
-		return Handle(Key, Setter)
+		local ToggleHandle = Handle(Key, Setter)
+		if ColorKey then
+			ToggleHandle.SetColor = ColorSetter
+			ToggleHandle.GetColor = function() return Config[ColorKey] end
+		end
+		return ToggleHandle
 	end
 
 	function Methods:AddSlider(Opt)
@@ -3018,6 +3075,278 @@ function Library:CreateWindow(Options)
 		end)
 		if ok then Avatar.Image = Image end
 	end)
+
+	function Window:ESPManager(Opt)
+		Opt = Opt or {}
+		if Window.ESP then return Window.ESP end
+
+		local Tab = Window:AddTab({ Name = Opt.Name or "ESP", Icon = Opt.Icon or "eye" })
+		local Manager = Tab:AddGroupbox({ Name = "ESP Manager", Side = "Left" })
+		local PreviewBox = Tab:AddGroupbox({ Name = "ESP Preview", Side = "Right" })
+
+		local Default = Opt.Default ~= false
+
+		Manager:AddToggle({
+			Name = "Box",
+			Flag = "ESP_Box",
+			Default = Default,
+			Color = Color3.fromRGB(240, 84, 88),
+			ColorFlag = "ESP_BoxColor",
+			ColorTitle = "Box color",
+		})
+		Manager:AddToggle({
+			Name = "Healthbar",
+			Flag = "ESP_Health",
+			Default = Default,
+			Color = Color3.fromRGB(80, 220, 140),
+			ColorFlag = "ESP_HealthColor",
+			ColorTitle = "Healthbar color",
+		})
+		Manager:AddToggle({
+			Name = "Name",
+			Flag = "ESP_Name",
+			Default = Default,
+			Color = Color3.fromRGB(255, 255, 255),
+			ColorFlag = "ESP_NameColor",
+			ColorTitle = "Name color",
+		})
+
+		-- Preview (rechts): Viewport mit dem eigenen Character + Overlay
+		local Holder = New("Frame", {
+			LayoutOrder = Next(),
+			Size = UDim2.new(1, 0, 0, 270),
+			BackgroundColor3 = Theme.Field,
+			BorderSizePixel = 0,
+			ClipsDescendants = true,
+			Parent = PreviewBox.Frame,
+		}, { Corner(8) })
+
+		local View = New("ViewportFrame", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Ambient = Color3.fromRGB(190, 190, 205),
+			LightColor = Color3.fromRGB(255, 255, 255),
+			LightDirection = Vector3.new(-0.4, -0.6, 1),
+			Parent = Holder,
+		})
+		local Cam = New("Camera", {
+			FieldOfView = 70,
+			CFrame = CFrame.lookAt(Vector3.new(0, 0, -6.2), Vector3.new(0, 0, 0)),
+			Parent = View,
+		})
+		View.CurrentCamera = Cam
+
+		local Overlay = New("Frame", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			ZIndex = 2,
+			Parent = Holder,
+		})
+		local BoxFrame = New("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.69),
+			BackgroundTransparency = 1,
+			Parent = Overlay,
+		}, {
+			New("UIAspectRatioConstraint", { AspectRatio = 4 / 6 }),
+		})
+		local BoxStroke = New("UIStroke", {
+			Thickness = 1.5,
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Parent = BoxFrame,
+		})
+		local HealthBG = New("Frame", {
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(0, -5, 0, 0),
+			Size = UDim2.new(0, 3, 1, 0),
+			BackgroundColor3 = Color3.new(0, 0, 0),
+			BackgroundTransparency = 0.35,
+			BorderSizePixel = 0,
+			Parent = BoxFrame,
+		})
+		local HealthFill = New("Frame", {
+			AnchorPoint = Vector2.new(0, 1),
+			Position = UDim2.fromScale(0, 1),
+			Size = UDim2.fromScale(1, 1),
+			BorderSizePixel = 0,
+			Parent = HealthBG,
+		})
+		local NameLabel = New("TextLabel", {
+			AnchorPoint = Vector2.new(0.5, 1),
+			Position = UDim2.new(0.5, 0, 0, -3),
+			Size = UDim2.new(1, 60, 0, 14),
+			BackgroundTransparency = 1,
+			Text = LocalPlayer.DisplayName,
+			TextSize = 13,
+			FontFace = Face("Medium"),
+			TextStrokeTransparency = 0.5,
+			Parent = BoxFrame,
+		})
+
+		local function BuildModel()
+			for _, Child in ipairs(View:GetChildren()) do
+				if Child:IsA("Model") then Child:Destroy() end
+			end
+			local Char = LocalPlayer.Character
+			if not Char then return end
+			local WasArchivable = Char.Archivable
+			Char.Archivable = true
+			local Clone = Char:Clone()
+			Char.Archivable = WasArchivable
+			if not Clone then return end
+			for _, Item in ipairs(Clone:GetDescendants()) do
+				if Item:IsA("BaseScript") or Item:IsA("Sound") then Item:Destroy() end
+			end
+			local Root = Clone:FindFirstChild("HumanoidRootPart")
+			if not Root then
+				Clone:Destroy()
+				return
+			end
+			Clone.PrimaryPart = Root
+			for _, Item in ipairs(Clone:GetDescendants()) do
+				if Item:IsA("BasePart") then Item.Anchored = true end
+			end
+			local Hum = Clone:FindFirstChildOfClass("Humanoid")
+			if Hum then Hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None end
+			Clone:PivotTo(CFrame.new(0, 0, 0))
+			Clone.Parent = View
+		end
+
+		task.spawn(function()
+			if not LocalPlayer.Character then LocalPlayer.CharacterAdded:Wait() end
+			task.wait(1)
+			pcall(BuildModel)
+		end)
+		LocalPlayer.CharacterAdded:Connect(function()
+			task.wait(1)
+			pcall(BuildModel)
+		end)
+
+		-- echtes ESP auf andere Spieler
+		local EspGui = New("ScreenGui", {
+			Name = GuiName .. "_ESP",
+			ResetOnSpawn = false,
+			IgnoreGuiInset = true,
+			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		})
+		EspGui.Parent = Gui.Parent or LocalPlayer:WaitForChild("PlayerGui")
+
+		local Objects = {}
+
+		local function Remove(Player)
+			local Entry = Objects[Player]
+			if Entry then
+				Entry.Bill:Destroy()
+				Objects[Player] = nil
+			end
+		end
+
+		local function Create(Player)
+			local Bill = New("BillboardGui", {
+				Name = Player.Name,
+				AlwaysOnTop = true,
+				ResetOnSpawn = false,
+				Size = UDim2.fromScale(4, 6),
+				Enabled = false,
+				Parent = EspGui,
+			})
+			local Box = New("Frame", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Parent = Bill,
+			})
+			local Outline = New("UIStroke", {
+				Thickness = 1.5,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				Parent = Box,
+			})
+			local BG = New("Frame", {
+				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(0, -5, 0, 0),
+				Size = UDim2.new(0, 3, 1, 0),
+				BackgroundColor3 = Color3.new(0, 0, 0),
+				BackgroundTransparency = 0.35,
+				BorderSizePixel = 0,
+				Parent = Box,
+			})
+			local Fill = New("Frame", {
+				AnchorPoint = Vector2.new(0, 1),
+				Position = UDim2.fromScale(0, 1),
+				Size = UDim2.fromScale(1, 1),
+				BorderSizePixel = 0,
+				Parent = BG,
+			})
+			local Label = New("TextLabel", {
+				AnchorPoint = Vector2.new(0.5, 1),
+				Position = UDim2.new(0.5, 0, 0, -3),
+				Size = UDim2.new(1, 60, 0, 14),
+				BackgroundTransparency = 1,
+				Text = Player.DisplayName,
+				TextSize = 13,
+				FontFace = Face("Medium"),
+				TextStrokeTransparency = 0.5,
+				Parent = Box,
+			})
+			Objects[Player] = { Bill = Bill, Box = Box, Outline = Outline, BG = BG, Fill = Fill, Label = Label }
+		end
+
+		local Loop
+		Loop = RunService.RenderStepped:Connect(function()
+			local ShowBox = Config.ESP_Box == true
+			local ShowHealth = Config.ESP_Health == true
+			local ShowName = Config.ESP_Name == true
+			local BoxColor = Config.ESP_BoxColor or Color3.fromRGB(240, 84, 88)
+			local HealthColor = Config.ESP_HealthColor or Color3.fromRGB(80, 220, 140)
+			local NameColor = Config.ESP_NameColor or Color3.new(1, 1, 1)
+
+			-- Preview
+			BoxStroke.Enabled = ShowBox
+			BoxStroke.Color = BoxColor
+			HealthBG.Visible = ShowHealth
+			HealthFill.BackgroundColor3 = HealthColor
+			NameLabel.Visible = ShowName
+			NameLabel.TextColor3 = NameColor
+			local Char = LocalPlayer.Character
+			local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
+			local Percent = 1
+			if Hum and Hum.MaxHealth > 0 then Percent = math.clamp(Hum.Health / Hum.MaxHealth, 0, 1) end
+			HealthFill.Size = UDim2.fromScale(1, Percent)
+
+			-- Welt-ESP
+			for _, Player in ipairs(Players:GetPlayers()) do
+				if Player ~= LocalPlayer and not Objects[Player] then Create(Player) end
+			end
+			for Player, Entry in pairs(Objects) do
+				local PChar = Player.Character
+				local Root = PChar and PChar:FindFirstChild("HumanoidRootPart")
+				local PHum = PChar and PChar:FindFirstChildOfClass("Humanoid")
+				if Root and PHum and PHum.Health > 0 and (ShowBox or ShowHealth or ShowName) then
+					Entry.Bill.Adornee = Root
+					Entry.Bill.Enabled = true
+					Entry.Outline.Enabled = ShowBox
+					Entry.Outline.Color = BoxColor
+					Entry.BG.Visible = ShowHealth
+					Entry.Fill.BackgroundColor3 = HealthColor
+					Entry.Fill.Size = UDim2.fromScale(1, math.clamp(PHum.Health / math.max(PHum.MaxHealth, 1), 0, 1))
+					Entry.Label.Visible = ShowName
+					Entry.Label.TextColor3 = NameColor
+				else
+					Entry.Bill.Enabled = false
+				end
+			end
+		end)
+
+		Players.PlayerRemoving:Connect(Remove)
+		Gui.Destroying:Connect(function()
+			Loop:Disconnect()
+			EspGui:Destroy()
+		end)
+
+		Window.ESP = { Tab = Tab, Manager = Manager, Preview = PreviewBox, Refresh = BuildModel }
+		return Window.ESP
+	end
+
 
 	Window.Name = TitleText
 	Window.Gui = Gui
